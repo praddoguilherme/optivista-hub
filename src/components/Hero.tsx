@@ -17,13 +17,13 @@ const Hero = () => {
               <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary font-medium text-sm mb-4">
                 Nova geração de software para optometria
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Sistema Inteligente para
-                <span className="text-primary block mt-2">Gestão de Optometria</span>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight tracking-tight">
+                Sistema para
+                <span className="text-primary block mt-2">Gestão em Optometria</span>
               </h1>
-              <p className="text-xl text-gray-600">
-                Simplifique sua prática com nossa solução completa para profissionais de optometria.
-                Gerencie pacientes, exames e prescrições em um só lugar.
+              <p className="text-xl text-gray-600 leading-relaxed">
+                Simplifique sua prática com nossa solução completa para profissionais.
+                Gerencie pacientes, exames e prescrições em um ambiente integrado.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-4 pt-4">
                 <button className="w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl font-medium">

@@ -15,42 +15,36 @@ const EyeAnimation = () => {
     renderer.setSize(400, 400);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Create outer eye shape (sclera) with more prominent wireframe
+    // Create outer eye shape (sclera) with enhanced grid
     const scleraGeometry = new THREE.SphereGeometry(2.2, 32, 32);
     const scleraMaterial = new THREE.MeshBasicMaterial({
       color: '#FFFFFF',
       wireframe: true,
       transparent: true,
-      opacity: 0.5, // Increased opacity
+      opacity: 0.8,
     });
     const sclera = new THREE.Mesh(scleraGeometry, scleraMaterial);
     scene.add(sclera);
 
-    // Create iris with multiple layers for depth
-    const irisGeometry = new THREE.TorusGeometry(1, 0.3, 32, 100); // Increased segments
-    const irisMaterial = new THREE.MeshBasicMaterial({
-      color: '#4A90A0',
-      wireframe: true,
-      transparent: true,
-      opacity: 0.9, // Increased opacity
-    });
-    const iris = new THREE.Mesh(irisGeometry, irisMaterial);
-    iris.rotation.x = Math.PI / 2;
-    scene.add(iris);
+    // Create main iris structure
+    const segments = 100;
+    const rings = [];
+    for (let i = 0; i < 4; i++) {
+      const radius = 1.2 - (i * 0.2);
+      const ringGeometry = new THREE.TorusGeometry(radius, 0.05, 16, segments);
+      const ringMaterial = new THREE.MeshBasicMaterial({
+        color: '#4A90A0',
+        wireframe: true,
+        transparent: true,
+        opacity: 0.9 - (i * 0.1),
+      });
+      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+      ring.rotation.x = Math.PI / 2;
+      rings.push(ring);
+      scene.add(ring);
+    }
 
-    // Create additional iris layer
-    const irisInnerGeometry = new THREE.TorusGeometry(0.8, 0.2, 32, 100);
-    const irisInnerMaterial = new THREE.MeshBasicMaterial({
-      color: '#4A90A0',
-      wireframe: true,
-      transparent: true,
-      opacity: 0.8,
-    });
-    const irisInner = new THREE.Mesh(irisInnerGeometry, irisInnerMaterial);
-    irisInner.rotation.x = Math.PI / 2;
-    scene.add(irisInner);
-
-    // Create pupil with more detail
+    // Create central pupil design
     const pupilGeometry = new THREE.CircleGeometry(0.5, 32);
     const pupilMaterial = new THREE.MeshBasicMaterial({
       color: '#4A90A0',
@@ -59,31 +53,41 @@ const EyeAnimation = () => {
       opacity: 1,
     });
     const pupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
-    pupil.position.z = 2;
+    pupil.position.z = 0.1;
     scene.add(pupil);
 
-    // Create iris details with multiple rings
-    const detailsGeometry = new THREE.TorusGeometry(0.7, 0.1, 32, 100);
-    const detailsMaterial = new THREE.MeshBasicMaterial({
-      color: '#4A90A0',
-      wireframe: true,
-      transparent: true,
-      opacity: 0.7,
-    });
-    const irisDetails = new THREE.Mesh(detailsGeometry, detailsMaterial);
-    irisDetails.rotation.x = Math.PI / 2;
-    scene.add(irisDetails);
+    // Create dynamic pattern around pupil
+    const patternGroup = new THREE.Group();
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const lineGeometry = new THREE.BoxGeometry(0.4, 0.02, 0.02);
+      const lineMaterial = new THREE.MeshBasicMaterial({
+        color: '#4A90A0',
+        transparent: true,
+        opacity: 0.8,
+      });
+      const line = new THREE.Mesh(lineGeometry, lineMaterial);
+      line.position.x = Math.cos(angle) * 0.7;
+      line.position.y = Math.sin(angle) * 0.7;
+      line.rotation.z = angle;
+      patternGroup.add(line);
+    }
+    scene.add(patternGroup);
 
     camera.position.z = 5;
 
-    // Animation
+    // Enhanced animation
     const animate = () => {
       requestAnimationFrame(animate);
       sclera.rotation.y += 0.003;
-      iris.rotation.z += 0.005;
-      irisInner.rotation.z -= 0.003;
+      
+      rings.forEach((ring, index) => {
+        ring.rotation.z += 0.002 * (index + 1);
+      });
+      
+      patternGroup.rotation.z += 0.005;
       pupil.rotation.z += 0.002;
-      irisDetails.rotation.z -= 0.004;
+      
       renderer.render(scene, camera);
     };
 
@@ -103,11 +107,11 @@ const EyeAnimation = () => {
       className="w-[400px] h-[400px] mx-auto bg-white/10 rounded-full"
       style={{
         boxShadow: `
-          0 0 40px rgba(74,144,160,0.4),
-          0 0 80px rgba(74,144,160,0.3),
-          0 0 120px rgba(74,144,160,0.2)
+          0 0 60px rgba(74,144,160,0.5),
+          0 0 100px rgba(74,144,160,0.3),
+          0 0 140px rgba(74,144,160,0.2)
         `,
-        background: 'radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 70%, transparent 100%)'
+        background: 'radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 70%, transparent 100%)'
       }}
     />
   );
