@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar, Plus, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +23,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { useClinic } from "@/hooks/use-clinic";
 
 interface Appointment {
   id: string;
@@ -56,6 +56,7 @@ const Consultas = () => {
   const [observacoes, setObservacoes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const clinicId = useClinic();
 
   // Fetch patients for the select dropdown
   const { data: patients } = useQuery({
@@ -104,7 +105,7 @@ const Consultas = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!paciente || !date || !horario || !tipo) {
+    if (!paciente || !date || !horario || !tipo || !clinicId) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos obrigatórios",
@@ -116,17 +117,17 @@ const Consultas = () => {
     setIsSubmitting(true);
 
     try {
-      // Combine date and time
       const [hours, minutes] = horario.split(":");
       const appointmentDate = new Date(date);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes));
 
-      const { error } = await supabase.from("appointments").insert([{
+      const { error } = await supabase.from("appointments").insert({
         patient_id: paciente,
         appointment_date: appointmentDate.toISOString(),
         type: tipo,
         notes: observacoes || null,
-      }]);
+        clinic_id: clinicId
+      });
 
       if (error) throw error;
 
@@ -135,7 +136,6 @@ const Consultas = () => {
         description: `Agendamento confirmado para ${appointmentDate.toLocaleDateString()} às ${horario}`,
       });
 
-      // Limpar formulário
       setPaciente("");
       setDate(undefined);
       setHorario("");

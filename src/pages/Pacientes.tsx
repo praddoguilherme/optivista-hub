@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { useClinic } from "@/hooks/use-clinic";
 
 interface Patient {
   id: string;
@@ -37,6 +37,7 @@ const Pacientes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+  const clinicId = useClinic();
 
   // Fetch patients
   const { data: patients, isLoading } = useQuery({
@@ -71,11 +72,21 @@ const Pacientes = () => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     
+    if (!clinicId) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível identificar a clínica",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const newPatient = {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       birth_date: formData.get("birth_date") as string,
+      clinic_id: clinicId
     };
 
     const { error } = await supabase.from("patients").insert([newPatient]);

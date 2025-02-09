@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { FileText, Plus, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +22,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { useClinic } from "@/hooks/use-clinic";
 
 interface Patient {
   id: string;
@@ -59,6 +59,7 @@ const Exames = () => {
   const [observacoes, setObservacoes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const clinicId = useClinic();
 
   // Fetch patients for the select dropdown
   const { data: patients } = useQuery({
@@ -105,7 +106,7 @@ const Exames = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!paciente || !tipo || !data) {
+    if (!paciente || !tipo || !data || !clinicId) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos obrigatórios",
@@ -117,12 +118,13 @@ const Exames = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("exams").insert([{
+      const { error } = await supabase.from("exams").insert({
         patient_id: paciente,
         type: tipo,
         exam_date: new Date(data).toISOString(),
         result_notes: observacoes || null,
-      }]);
+        clinic_id: clinicId
+      });
 
       if (error) throw error;
 
@@ -131,7 +133,6 @@ const Exames = () => {
         description: "O exame foi registrado no sistema.",
       });
 
-      // Reset form
       setPaciente("");
       setTipo("");
       setData("");
@@ -357,4 +358,3 @@ const Exames = () => {
 };
 
 export default Exames;
-
