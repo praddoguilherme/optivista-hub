@@ -20,62 +20,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
+  // Simplificada a verificação de admin
   const checkIfAdmin = async (email: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('admins')
-        .select('email')
-        .eq('email', email)
-        .single();
-
-      if (error) {
-        console.error('Erro ao verificar admin:', error);
-        return false;
-      }
-      return !!data;
-    } catch (error) {
-      console.error('Erro ao verificar administrador:', error);
-      return false;
-    }
+    const { data } = await supabase
+      .from('admins')
+      .select('email')
+      .eq('email', email)
+      .maybeSingle();
+    return !!data;
   };
 
-  const updateUserState = async (currentUser: User | null) => {
-    if (!currentUser) {
-      setUser(null);
-      setIsAdmin(false);
-      return;
-    }
-
-    try {
-      const adminStatus = await checkIfAdmin(currentUser.email!);
-      setUser(currentUser);
-      setIsAdmin(adminStatus);
-    } catch (error) {
-      console.error('Erro ao atualizar estado do usuário:', error);
-      setUser(currentUser);
-      setIsAdmin(false);
-    }
-  };
-
+  // Initialize auth state
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initAuth = async () => {
       try {
+        // Get initial session
         const { data: { session } } = await supabase.auth.getSession();
-        await updateUserState(session?.user || null);
+        if (session?.user) {
+          setUser(session.user);
+          const adminStatus = await checkIfAdmin(session.user.email!);
+          setIsAdmin(adminStatus);
+        }
       } catch (error) {
-        console.error('Erro ao inicializar auth:', error);
-        await updateUserState(null);
+        console.error('Erro na inicialização do auth:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    initializeAuth();
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event);
+        
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAdmin(false);
+          return;
+        }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      await updateUserState(session?.user || null);
-    });
+        if (session?.user) {
+          setUser(session.user);
+          const adminStatus = await checkIfAdmin(session.user.email!);
+          setIsAdmin(adminStatus);
+        } else {
+          setUser(null);
+          setIsAdmin(false);
+        }
+      }
+    );
 
+    initAuth();
     return () => subscription.unsubscribe();
   }, []);
 
@@ -83,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
+      
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo ao sistema.",
@@ -103,9 +98,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-
-      setUser(null);
-      setIsAdmin(false);
       
       toast({
         title: "Logout realizado",
