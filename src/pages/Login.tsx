@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,13 +9,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, isAdmin } = useAuth();
+  const { signIn, isAdmin, user, loading } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+
+  // Se estiver carregando, mostra um indicador de loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Se já estiver autenticado, redireciona
+  if (user) {
+    return <Navigate to={isAdmin ? "/dashboard/admin" : "/dashboard"} replace />;
+  }
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,14 +40,8 @@ const Login = () => {
 
     try {
       await signIn(email, password);
-      if (isAdmin) {
-        navigate('/dashboard/admin');
-      } else {
-        navigate('/dashboard');
-      }
     } catch (error) {
       // Erro já tratado no AuthContext
-    } finally {
       setIsLoading(false);
     }
   };

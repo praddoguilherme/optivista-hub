@@ -2,7 +2,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 
 interface AuthContextType {
@@ -19,7 +18,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const checkIfAdmin = async (email: string) => {
@@ -39,14 +37,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkIfAdmin(session.user.email!).then(setIsAdmin);
+    // Verificar sessão atual
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          const adminStatus = await checkIfAdmin(session.user.email!);
+          setIsAdmin(adminStatus);
+        }
+      } catch (error) {
+        console.error('Erro ao inicializar auth:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
+    initializeAuth();
+
+    // Escutar mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -68,7 +77,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isUserAdmin = await checkIfAdmin(email);
       setIsAdmin(isUserAdmin);
 
-      navigate('/dashboard');
       toast({
         title: "Login realizado com sucesso!",
         description: `Bem-vindo ${isUserAdmin ? '(Administrador)' : ''} ao sistema.`,
@@ -88,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       setIsAdmin(false);
-      navigate('/');
+      setUser(null);
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso.",
