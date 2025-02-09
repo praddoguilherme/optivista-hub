@@ -28,63 +28,43 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
-    // Só verifica clínica se o usuário estiver logado e em uma rota protegida
     if (user && location.pathname.startsWith('/dashboard')) {
-      loadSelectedClinic();
+      loadClinic();
     } else {
       setClinic(null);
       setLoading(false);
     }
   }, [user, location.pathname]);
 
-  const loadSelectedClinic = async () => {
+  const loadClinic = async () => {
     try {
-      const selectedClinicId = localStorage.getItem("selectedClinicId");
-      
-      if (!selectedClinicId) {
-        // Check if user has any clinics
-        const { data: clinicUsers, error: clinicsError } = await supabase
-          .from("clinic_users")
-          .select("clinic_id")
-          .eq("user_id", user?.id);
+      // First, check if user is admin
+      const { data: clinicUser, error: roleError } = await supabase
+        .from("clinic_users")
+        .select("role, clinic_id")
+        .eq("user_id", user?.id)
+        .maybeSingle();
 
-        if (clinicsError) throw clinicsError;
+      if (roleError) throw roleError;
 
-        if (!clinicUsers || clinicUsers.length === 0) {
-          // If no clinics found, redirect to clinic setup
-          navigate("/clinic-setup");
-          setLoading(false);
-          return;
-        }
-
-        // Use the first clinic found
-        localStorage.setItem("selectedClinicId", clinicUsers[0].clinic_id);
-
-        // Load clinic details
-        const { data: clinicDetails, error: clinicError } = await supabase
-          .from("clinics")
-          .select("*")
-          .eq("id", clinicUsers[0].clinic_id)
-          .single();
-
-        if (clinicError) throw clinicError;
-        setClinic(clinicDetails);
-      } else {
-        // Load clinic details
-        const { data: clinicDetails, error: clinicError } = await supabase
-          .from("clinics")
-          .select("*")
-          .eq("id", selectedClinicId)
-          .single();
-
-        if (clinicError) throw clinicError;
-        setClinic(clinicDetails);
+      if (!clinicUser) {
+        // User has no clinic assignment
+        navigate("/");
+        return;
       }
+
+      // Load clinic details
+      const { data: clinicDetails, error: clinicError } = await supabase
+        .from("clinics")
+        .select("*")
+        .eq("id", clinicUser.clinic_id)
+        .single();
+
+      if (clinicError) throw clinicError;
+      setClinic(clinicDetails);
     } catch (error) {
       console.error("Error loading clinic:", error);
-      // Clear selected clinic ID if there was an error
-      localStorage.removeItem("selectedClinicId");
-      navigate("/clinic-setup");
+      navigate("/");
     } finally {
       setLoading(false);
     }

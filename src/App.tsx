@@ -16,7 +16,6 @@ import Consultas from "./pages/Consultas";
 import Exames from "./pages/Exames";
 import Configuracoes from "./pages/Configuracoes";
 import Financeiro from "./pages/Financeiro";
-import ClinicSetup from "./pages/ClinicSetup";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +30,6 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/clinic-setup" element={<ClinicSetup />} />
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="pacientes" element={<Pacientes />} />
