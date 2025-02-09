@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "./AuthContext";
@@ -18,7 +18,7 @@ interface ClinicContextType {
   loading: boolean;
 }
 
-const ClinicContext = createContext<ClinicContextType | undefined>(undefined);
+export const ClinicContext = createContext<ClinicContextType | undefined>(undefined);
 
 export function ClinicProvider({ children }: { children: React.ReactNode }) {
   const [clinic, setClinic] = useState<Clinic | null>(null);
@@ -90,12 +90,4 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
       {children}
     </ClinicContext.Provider>
   );
-}
-
-export function useClinic() {
-  const context = useContext(ClinicContext);
-  if (context === undefined) {
-    throw new Error("useClinic must be used within a ClinicProvider");
-  }
-  return context;
 }
