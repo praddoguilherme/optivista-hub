@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useClinic } from "@/hooks/use-clinic";
 
 interface Patient {
   id: string;
@@ -37,7 +37,6 @@ const Pacientes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  const { clinic } = useClinic();
 
   // Fetch patients
   const { data: patients, isLoading } = useQuery({
@@ -46,7 +45,6 @@ const Pacientes = () => {
       const { data, error } = await supabase
         .from("patients")
         .select("*")
-        .eq("clinic_id", clinic?.id)
         .order("name");
 
       if (error) {
@@ -61,7 +59,6 @@ const Pacientes = () => {
 
       return data as Patient[];
     },
-    enabled: !!clinic?.id,
   });
 
   // Filter patients based on search term
@@ -79,7 +76,6 @@ const Pacientes = () => {
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       birth_date: formData.get("birth_date") as string,
-      clinic_id: clinic?.id,
     };
 
     const { error } = await supabase.from("patients").insert([newPatient]);

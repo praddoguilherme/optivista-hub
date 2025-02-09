@@ -9,31 +9,9 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      admins: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       appointments: {
         Row: {
           appointment_date: string
-          clinic_id: string
           created_at: string
           id: string
           notes: string | null
@@ -44,7 +22,6 @@ export type Database = {
         }
         Insert: {
           appointment_date: string
-          clinic_id: string
           created_at?: string
           id?: string
           notes?: string | null
@@ -55,7 +32,6 @@ export type Database = {
         }
         Update: {
           appointment_date?: string
-          clinic_id?: string
           created_at?: string
           id?: string
           notes?: string | null
@@ -66,13 +42,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "appointments_clinic_id_fkey"
-            columns: ["clinic_id"]
-            isOneToOne: false
-            referencedRelation: "clinics"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "appointments_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
@@ -81,75 +50,9 @@ export type Database = {
           },
         ]
       }
-      clinic_users: {
-        Row: {
-          clinic_id: string
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["user_role"]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          clinic_id: string
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          clinic_id?: string
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clinic_users_clinic_id_fkey"
-            columns: ["clinic_id"]
-            isOneToOne: false
-            referencedRelation: "clinics"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      clinics: {
-        Row: {
-          address: string | null
-          created_at: string
-          email: string | null
-          id: string
-          name: string
-          phone: string | null
-          updated_at: string
-        }
-        Insert: {
-          address?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          name: string
-          phone?: string | null
-          updated_at?: string
-        }
-        Update: {
-          address?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          name?: string
-          phone?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       exams: {
         Row: {
           appointment_id: string | null
-          clinic_id: string
           created_at: string
           exam_date: string
           id: string
@@ -161,7 +64,6 @@ export type Database = {
         }
         Insert: {
           appointment_id?: string | null
-          clinic_id: string
           created_at?: string
           exam_date: string
           id?: string
@@ -173,7 +75,6 @@ export type Database = {
         }
         Update: {
           appointment_id?: string | null
-          clinic_id?: string
           created_at?: string
           exam_date?: string
           id?: string
@@ -192,13 +93,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "exams_clinic_id_fkey"
-            columns: ["clinic_id"]
-            isOneToOne: false
-            referencedRelation: "clinics"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "exams_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
@@ -210,7 +104,6 @@ export type Database = {
       patients: {
         Row: {
           birth_date: string | null
-          clinic_id: string
           created_at: string
           email: string | null
           id: string
@@ -220,7 +113,6 @@ export type Database = {
         }
         Insert: {
           birth_date?: string | null
-          clinic_id: string
           created_at?: string
           email?: string | null
           id?: string
@@ -230,45 +122,12 @@ export type Database = {
         }
         Update: {
           birth_date?: string | null
-          clinic_id?: string
           created_at?: string
           email?: string | null
           id?: string
           name?: string
           phone?: string | null
           updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "patients_clinic_id_fkey"
-            columns: ["clinic_id"]
-            isOneToOne: false
-            referencedRelation: "clinics"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      system_settings: {
-        Row: {
-          created_at: string
-          id: string
-          key: string
-          updated_at: string
-          value: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          key: string
-          updated_at?: string
-          value?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          key?: string
-          updated_at?: string
-          value?: string | null
         }
         Relationships: []
       }
@@ -277,15 +136,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_is_admin: {
-        Args: {
-          user_email: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      user_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never

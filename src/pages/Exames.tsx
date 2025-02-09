@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { FileText, Plus, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +23,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { useClinic } from "@/hooks/use-clinic";
 
 interface Patient {
   id: string;
@@ -59,7 +59,6 @@ const Exames = () => {
   const [observacoes, setObservacoes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { clinic } = useClinic();
 
   // Fetch patients for the select dropdown
   const { data: patients } = useQuery({
@@ -68,13 +67,11 @@ const Exames = () => {
       const { data, error } = await supabase
         .from("patients")
         .select("id, name")
-        .eq("clinic_id", clinic?.id)
         .order("name");
 
       if (error) throw error;
       return data as Patient[];
     },
-    enabled: !!clinic?.id,
   });
 
   // Fetch exams
@@ -93,13 +90,11 @@ const Exames = () => {
             name
           )
         `)
-        .eq("clinic_id", clinic?.id)
         .order("exam_date", { ascending: false });
 
       if (error) throw error;
       return data as Exam[];
     },
-    enabled: !!clinic?.id,
   });
 
   const filteredExams = exams?.filter((exam) =>
@@ -127,7 +122,6 @@ const Exames = () => {
         type: tipo,
         exam_date: new Date(data).toISOString(),
         result_notes: observacoes || null,
-        clinic_id: clinic?.id,
       }]);
 
       if (error) throw error;
@@ -363,3 +357,4 @@ const Exames = () => {
 };
 
 export default Exames;
+

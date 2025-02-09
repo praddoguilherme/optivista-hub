@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,87 +7,27 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
-import { Navigate, useNavigate, useLocation } from "react-router-dom";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, user, loading } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { signIn, signUp } = useAuth();
 
-  // Pega a rota de origem do state, se existir
-  const from = (location.state as { from?: string })?.from || "/dashboard";
-
-  // Mostra loading durante a verificação inicial de autenticação
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  // Redireciona usuários já autenticados para a página de origem
-  if (user) {
-    console.log("Usuário já autenticado, redirecionando para:", from);
-    return <Navigate to={from} replace />;
-  }
-
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, isLogin: boolean) => {
     e.preventDefault();
-    if (isLoading) return;
-
     setIsLoading(true);
+
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
     try {
-      await signIn(email, password);
-      console.log("Login bem-sucedido, redirecionando para:", from);
-      navigate(from, { replace: true });
-    } catch (error: any) {
-      console.error("Erro no login:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro no login",
-        description: error.message || "Ocorreu um erro ao fazer login",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isLoading) return;
-
-    setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Você já pode fazer login no sistema.",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao criar conta",
-        description: error.message,
-      });
+      if (isLogin) {
+        await signIn(email, password);
+      } else {
+        await signUp(email, password);
+      }
+    } catch (error) {
+      // Erro já tratado no AuthContext
     } finally {
       setIsLoading(false);
     }
@@ -106,34 +47,32 @@ const Login = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="space-y-4">
+          <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Criar Conta</TabsTrigger>
+              <TabsTrigger value="register">Registro</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={(e) => handleSubmit(e, true)} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="login-email"
+                    id="email"
                     name="email"
                     type="email"
                     placeholder="seu@email.com"
                     required
-                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">Senha</Label>
+                  <Label htmlFor="password">Senha</Label>
                   <Input
-                    id="login-password"
+                    id="password"
                     name="password"
                     type="password"
                     placeholder="••••••••"
                     required
-                    disabled={isLoading}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -142,32 +81,30 @@ const Login = () => {
               </form>
             </TabsContent>
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
+            <TabsContent value="register">
+              <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="register-email">Email</Label>
                   <Input
-                    id="signup-email"
+                    id="register-email"
                     name="email"
                     type="email"
                     placeholder="seu@email.com"
                     required
-                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Senha</Label>
+                  <Label htmlFor="register-password">Senha</Label>
                   <Input
-                    id="signup-password"
+                    id="register-password"
                     name="password"
                     type="password"
                     placeholder="••••••••"
                     required
-                    disabled={isLoading}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Criando conta..." : "Criar conta"}
+                  {isLoading ? "Registrando..." : "Registrar"}
                 </Button>
               </form>
             </TabsContent>
