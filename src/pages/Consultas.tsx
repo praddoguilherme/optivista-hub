@@ -355,4 +355,18 @@ const Consultas = () => {
                         className="gap-1"
                       >
                         <Check className="h-4 w-4" />
-                        
+                        Confirmar
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Consultas;
