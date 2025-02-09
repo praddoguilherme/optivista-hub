@@ -1,5 +1,4 @@
-
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, Plus, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +62,7 @@ const Consultas = () => {
   const [tipo, setTipo] = useState("");
   const [observacoes, setObservacoes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [consultas, setConsultas] = useState(mockConsultas);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,6 +105,34 @@ const Consultas = () => {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmarConsulta = async (consultaId: number) => {
+    try {
+      // Simulando uma chamada de API
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setConsultas(prevConsultas => 
+        prevConsultas.map(consulta => 
+          consulta.id === consultaId 
+            ? { ...consulta, status: "Confirmada" }
+            : consulta
+        )
+      );
+
+      const consulta = consultas.find(c => c.id === consultaId);
+
+      toast({
+        title: "Consulta confirmada!",
+        description: `A consulta de ${consulta?.paciente} foi confirmada com sucesso.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao confirmar",
+        description: "Ocorreu um erro ao tentar confirmar a consulta",
+        variant: "destructive",
+      });
     }
   };
 
@@ -240,7 +268,6 @@ const Consultas = () => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Próximas Consultas */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -250,7 +277,7 @@ const Consultas = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockConsultas.map((consulta) => (
+              {consultas.map((consulta) => (
                 <div
                   key={consulta.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
@@ -261,22 +288,35 @@ const Consultas = () => {
                       {consulta.horario} - {consulta.tipo}
                     </p>
                   </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      consulta.status === "Aguardando"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
-                  >
-                    {consulta.status}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        consulta.status === "Aguardando"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : consulta.status === "Confirmada"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {consulta.status}
+                    </span>
+                    {consulta.status === "Aguardando" && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleConfirmarConsulta(consulta.id)}
+                        className="gap-1"
+                      >
+                        <Check className="h-4 w-4" />
+                        Confirmar
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Calendário virá aqui em uma próxima atualização */}
         <Card>
           <CardHeader>
             <CardTitle>Calendário</CardTitle>
@@ -293,4 +333,3 @@ const Consultas = () => {
 };
 
 export default Consultas;
-
