@@ -20,8 +20,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
-  // Simplificada a verificação de admin
   const checkIfAdmin = async (email: string) => {
+    if (!email) return false;
     const { data } = await supabase
       .from('admins')
       .select('email')
@@ -30,29 +30,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return !!data;
   };
 
-  // Initialize auth state
   useEffect(() => {
+    let mounted = true;
+
     const initAuth = async () => {
       try {
-        // Get initial session
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUser(session.user);
-          const adminStatus = await checkIfAdmin(session.user.email!);
-          setIsAdmin(adminStatus);
+        
+        if (mounted) {
+          if (session?.user) {
+            setUser(session.user);
+            const adminStatus = await checkIfAdmin(session.user.email!);
+            setIsAdmin(adminStatus);
+          }
+          setLoading(false);
         }
       } catch (error) {
         console.error('Erro na inicialização do auth:', error);
-      } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event);
         
+        if (!mounted) return;
+
         if (event === 'SIGNED_OUT') {
           setUser(null);
           setIsAdmin(false);
@@ -71,7 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     initAuth();
-    return () => subscription.unsubscribe();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
