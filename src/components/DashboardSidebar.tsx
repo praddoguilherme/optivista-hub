@@ -9,7 +9,6 @@ import {
   DollarSign,
   Eye
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -21,7 +20,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
   {
@@ -57,17 +56,7 @@ const menuItems = [
 ];
 
 const DashboardSidebar = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso.",
-    });
-    navigate("/");
-  };
+  const { signOut } = useAuth();
 
   return (
     <Sidebar className="border-r border-gray-200 bg-white/80 backdrop-blur-lg w-72 min-h-screen">
@@ -93,7 +82,7 @@ const DashboardSidebar = () => {
                       <Button 
                         variant="ghost" 
                         className="w-full justify-start py-6 text-base hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                        onClick={() => navigate(item.url)}
+                        onClick={() => window.location.href = item.url}
                       >
                         <item.icon className="mr-4 h-5 w-5" />
                         <span>{item.title}</span>
@@ -111,7 +100,7 @@ const DashboardSidebar = () => {
           <Button 
             variant="ghost" 
             className="w-full justify-start py-6 text-base hover:bg-red-50 text-red-600 hover:text-red-700 transition-all duration-200"
-            onClick={handleLogout}
+            onClick={signOut}
           >
             <LogOut className="mr-4 h-5 w-5" />
             <span>Sair</span>
