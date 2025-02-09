@@ -22,12 +22,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkIfAdmin = async (email: string) => {
     if (!email) return false;
-    const { data } = await supabase
-      .from('admins')
-      .select('email')
-      .eq('email', email)
-      .maybeSingle();
-    return !!data;
+    try {
+      const { data } = await supabase
+        .from('admins')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+      return !!data;
+    } catch (error) {
+      console.error('Erro ao verificar admin:', error);
+      return false;
+    }
+  };
+
+  const updateUserState = async (currentUser: User | null) => {
+    try {
+      if (currentUser) {
+        setUser(currentUser);
+        const adminStatus = await checkIfAdmin(currentUser.email!);
+        setIsAdmin(adminStatus);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar estado do usuário:', error);
+    }
   };
 
   useEffect(() => {
@@ -38,11 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (mounted) {
-          if (session?.user) {
-            setUser(session.user);
-            const adminStatus = await checkIfAdmin(session.user.email!);
-            setIsAdmin(adminStatus);
-          }
+          await updateUserState(session?.user || null);
           setLoading(false);
         }
       } catch (error) {
@@ -59,19 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (!mounted) return;
 
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setIsAdmin(false);
-          return;
-        }
-
         if (session?.user) {
-          setUser(session.user);
-          const adminStatus = await checkIfAdmin(session.user.email!);
-          setIsAdmin(adminStatus);
+          await updateUserState(session.user);
         } else {
-          setUser(null);
-          setIsAdmin(false);
+          await updateUserState(null);
         }
       }
     );

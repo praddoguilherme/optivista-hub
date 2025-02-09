@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const DashboardLayout = () => {
   const { user, loading } = useAuth();
 
+  // Mostra loading apenas durante a verificação inicial
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -15,9 +16,9 @@ const DashboardLayout = () => {
     );
   }
 
-  // Redireciona para login se não estiver autenticado
+  // Se não há usuário autenticado, redireciona para login
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" />;
   }
 
   return (
