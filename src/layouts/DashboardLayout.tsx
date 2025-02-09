@@ -8,7 +8,6 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verificar autenticação
     const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
     if (!isAuthenticated) {
       navigate("/login");
@@ -19,7 +18,7 @@ const DashboardLayout = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <DashboardSidebar />
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-8 bg-gray-50">
           <Outlet />
         </main>
       </div>
