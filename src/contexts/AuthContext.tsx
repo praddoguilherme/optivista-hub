@@ -20,7 +20,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
-  // Função para verificar se o usuário é admin usando a nova função SQL
   const checkIsAdmin = async (email: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase.rpc('check_is_admin', {
@@ -39,12 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Função para atualizar o estado do usuário
   const updateUserState = async (currentUser: User | null) => {
+    console.log('Atualizando estado do usuário:', currentUser?.email);
     try {
       if (currentUser) {
         const isUserAdmin = await checkIsAdmin(currentUser.email!);
-        console.log('User admin status:', isUserAdmin);
+        console.log('Status de admin do usuário:', isUserAdmin);
         setUser(currentUser);
         setIsAdmin(isUserAdmin);
       } else {
@@ -52,34 +51,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAdmin(false);
       }
     } catch (error) {
-      console.error('Error updating user state:', error);
+      console.error('Erro ao atualizar estado do usuário:', error);
       setUser(currentUser);
       setIsAdmin(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Buscar sessão inicial
+    let mounted = true;
+
     const initSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        await updateUserState(session?.user || null);
+        console.log('Sessão inicial:', session?.user?.email);
+        if (mounted) {
+          await updateUserState(session?.user || null);
+        }
       } catch (error) {
         console.error('Erro ao inicializar sessão:', error);
-      } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    // Monitorar mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
-      await updateUserState(session?.user || null);
+      console.log('Mudança no estado de autenticação:', event, session?.user?.email);
+      if (mounted) {
+        await updateUserState(session?.user || null);
+      }
     });
 
     initSession();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);

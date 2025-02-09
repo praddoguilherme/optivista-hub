@@ -8,13 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, user, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Pega a rota de origem do state, se existir
+  const from = (location.state as { from?: string })?.from || "/dashboard";
 
   // Mostra loading durante a verificação inicial de autenticação
   if (loading) {
@@ -25,10 +29,10 @@ const Login = () => {
     );
   }
 
-  // Redireciona usuários já autenticados
+  // Redireciona usuários já autenticados para a página de origem
   if (user) {
-    console.log("User already authenticated, redirecting to dashboard");
-    return <Navigate to="/dashboard" replace />;
+    console.log("Usuário já autenticado, redirecionando para:", from);
+    return <Navigate to={from} replace />;
   }
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -42,8 +46,8 @@ const Login = () => {
 
     try {
       await signIn(email, password);
-      console.log("Login successful");
-      navigate("/dashboard", { replace: true });
+      console.log("Login bem-sucedido, redirecionando para:", from);
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Erro no login:", error);
       toast({
