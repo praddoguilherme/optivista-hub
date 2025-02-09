@@ -13,7 +13,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, user, loading, isAdmin } = useAuth();
+  const { signIn, user, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -43,10 +43,16 @@ const Login = () => {
 
     try {
       await signIn(email, password);
-      console.log("Login successful, navigating to dashboard");
-      navigate("/dashboard");
-    } catch (error) {
+      console.log("Login successful");
+      // Usando replace para evitar que o usuário volte para a página de login
+      navigate("/dashboard", { replace: true });
+    } catch (error: any) {
       console.error("Erro no login:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro no login",
+        description: error.message || "Ocorreu um erro ao fazer login",
+      });
     } finally {
       setIsLoading(false);
     }
