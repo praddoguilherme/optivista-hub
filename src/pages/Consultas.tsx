@@ -1,3 +1,5 @@
+
+import { useState } from "react";
 import { Calendar, Plus, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,32 +21,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
-const mockConsultas = [
-  {
-    id: 1,
-    paciente: "Maria Silva",
-    horario: "09:00",
-    tipo: "Rotina",
-    status: "Aguardando",
-  },
-  {
-    id: 2,
-    paciente: "João Santos",
-    horario: "10:30",
-    tipo: "Retorno",
-    status: "Em Andamento",
-  },
-];
+interface Appointment {
+  id: string;
+  patient_id: string;
+  appointment_date: string;
+  type: string;
+  status: string;
+  notes: string | null;
+}
 
-const mockPacientes = [
-  { id: 1, nome: "Maria Silva" },
-  { id: 2, nome: "João Santos" },
-  { id: 3, nome: "Ana Oliveira" },
-  { id: 4, nome: "Pedro Costa" },
-];
+interface Patient {
+  id: string;
+  name: string;
+}
 
 const tiposConsulta = [
   "Primeira Consulta",
@@ -62,8 +55,51 @@ const Consultas = () => {
   const [tipo, setTipo] = useState("");
   const [observacoes, setObservacoes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [consultas, setConsultas] = useState(mockConsultas);
   const { toast } = useToast();
+
+  // Fetch patients for the select dropdown
+  const { data: patients } = useQuery({
+    queryKey: ["patients"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("patients")
+        .select("id, name")
+        .order("name");
+
+      if (error) throw error;
+      return data as Patient[];
+    },
+  });
+
+  // Fetch today's appointments
+  const { data: appointments, refetch: refetchAppointments } = useQuery({
+    queryKey: ["appointments", "today"],
+    queryFn: async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const { data, error } = await supabase
+        .from("appointments")
+        .select(`
+          id,
+          appointment_date,
+          type,
+          status,
+          notes,
+          patients (
+            name
+          )
+        `)
+        .gte("appointment_date", today.toISOString())
+        .lt("appointment_date", tomorrow.toISOString())
+        .order("appointment_date");
+
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,14 +116,23 @@ const Consultas = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulando uma chamada de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Combine date and time
+      const [hours, minutes] = horario.split(":");
+      const appointmentDate = new Date(date);
+      appointmentDate.setHours(parseInt(hours), parseInt(minutes));
 
-      const pacienteSelecionado = mockPacientes.find(p => String(p.id) === paciente);
+      const { error } = await supabase.from("appointments").insert([{
+        patient_id: paciente,
+        appointment_date: appointmentDate.toISOString(),
+        type: tipo,
+        notes: observacoes || null,
+      }]);
+
+      if (error) throw error;
 
       toast({
         title: "Consulta agendada com sucesso!",
-        description: `Agendamento confirmado para ${pacienteSelecionado?.nome} em ${date.toLocaleDateString()} às ${horario}`,
+        description: `Agendamento confirmado para ${appointmentDate.toLocaleDateString()} às ${horario}`,
       });
 
       // Limpar formulário
@@ -97,7 +142,9 @@ const Consultas = () => {
       setTipo("");
       setObservacoes("");
       setIsOpen(false);
+      refetchAppointments();
     } catch (error) {
+      console.error("Error scheduling appointment:", error);
       toast({
         title: "Erro ao agendar",
         description: "Ocorreu um erro ao tentar agendar a consulta",
@@ -108,26 +155,23 @@ const Consultas = () => {
     }
   };
 
-  const handleConfirmarConsulta = async (consultaId: number) => {
+  const handleConfirmarConsulta = async (appointmentId: string) => {
     try {
-      // Simulando uma chamada de API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setConsultas(prevConsultas => 
-        prevConsultas.map(consulta => 
-          consulta.id === consultaId 
-            ? { ...consulta, status: "Confirmada" }
-            : consulta
-        )
-      );
+      const { error } = await supabase
+        .from("appointments")
+        .update({ status: "confirmed" })
+        .eq("id", appointmentId);
 
-      const consulta = consultas.find(c => c.id === consultaId);
+      if (error) throw error;
 
       toast({
         title: "Consulta confirmada!",
-        description: `A consulta de ${consulta?.paciente} foi confirmada com sucesso.`,
+        description: "A consulta foi confirmada com sucesso.",
       });
+
+      refetchAppointments();
     } catch (error) {
+      console.error("Error confirming appointment:", error);
       toast({
         title: "Erro ao confirmar",
         description: "Ocorreu um erro ao tentar confirmar a consulta",
@@ -172,13 +216,13 @@ const Consultas = () => {
                       <SelectValue placeholder="Selecione o paciente" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border shadow-lg">
-                      {mockPacientes.map((paciente) => (
+                      {patients?.map((patient) => (
                         <SelectItem 
-                          key={paciente.id} 
-                          value={String(paciente.id)}
+                          key={patient.id} 
+                          value={patient.id}
                           className="hover:bg-gray-100"
                         >
-                          {paciente.nome}
+                          {patient.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -277,30 +321,38 @@ const Consultas = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {consultas.map((consulta) => (
+              {appointments?.map((consulta) => (
                 <div
                   key={consulta.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <div>
-                    <h3 className="font-medium">{consulta.paciente}</h3>
+                    <h3 className="font-medium">{consulta.patients.name}</h3>
                     <p className="text-sm text-gray-600">
-                      {consulta.horario} - {consulta.tipo}
+                      {new Date(consulta.appointment_date).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}{" "}
+                      - {consulta.type}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span
                       className={`px-3 py-1 rounded-full text-sm ${
-                        consulta.status === "Aguardando"
+                        consulta.status === "scheduled"
                           ? "bg-yellow-100 text-yellow-800"
-                          : consulta.status === "Confirmada"
+                          : consulta.status === "confirmed"
                           ? "bg-green-100 text-green-800"
                           : "bg-blue-100 text-blue-800"
                       }`}
                     >
-                      {consulta.status}
+                      {consulta.status === "scheduled"
+                        ? "Aguardando"
+                        : consulta.status === "confirmed"
+                        ? "Confirmada"
+                        : "Em Andamento"}
                     </span>
-                    {consulta.status === "Aguardando" && (
+                    {consulta.status === "scheduled" && (
                       <Button
                         size="sm"
                         onClick={() => handleConfirmarConsulta(consulta.id)}
@@ -313,6 +365,11 @@ const Consultas = () => {
                   </div>
                 </div>
               ))}
+              {appointments?.length === 0 && (
+                <p className="text-center text-gray-500">
+                  Nenhuma consulta agendada para hoje
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
