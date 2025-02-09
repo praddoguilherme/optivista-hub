@@ -41,13 +41,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
         if (session?.user) {
+          setUser(session.user);
           const adminStatus = await checkIfAdmin(session.user.email!);
           setIsAdmin(adminStatus);
+        } else {
+          setUser(null);
+          setIsAdmin(false);
         }
       } catch (error) {
         console.error('Erro ao inicializar auth:', error);
+        setUser(null);
+        setIsAdmin(false);
       } finally {
         setLoading(false);
       }
@@ -57,11 +62,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Escutar mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
+      console.log("Auth state changed:", _event, session?.user?.email);
       if (session?.user) {
+        setUser(session.user);
         const adminStatus = await checkIfAdmin(session.user.email!);
         setIsAdmin(adminStatus);
       } else {
+        setUser(null);
         setIsAdmin(false);
       }
     });
@@ -82,6 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: `Bem-vindo ${isUserAdmin ? '(Administrador)' : ''} ao sistema.`,
       });
     } catch (error: any) {
+      console.error("Sign in error:", error);
       toast({
         variant: "destructive",
         title: "Erro no login",
@@ -124,3 +132,4 @@ export function useAuth() {
   }
   return context;
 }
+
