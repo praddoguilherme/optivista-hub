@@ -28,7 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('email', email)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao verificar admin:', error);
+        return false;
+      }
       return !!data;
     } catch (error) {
       console.error('Erro ao verificar administrador:', error);
@@ -37,18 +40,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUserState = async (currentUser: User | null) => {
+    if (!currentUser) {
+      setUser(null);
+      setIsAdmin(false);
+      return;
+    }
+
     try {
-      if (currentUser) {
-        const adminStatus = await checkIfAdmin(currentUser.email!);
-        setUser(currentUser);
-        setIsAdmin(adminStatus);
-      } else {
-        setUser(null);
-        setIsAdmin(false);
-      }
+      const adminStatus = await checkIfAdmin(currentUser.email!);
+      setUser(currentUser);
+      setIsAdmin(adminStatus);
     } catch (error) {
       console.error('Erro ao atualizar estado do usuário:', error);
-      setUser(null);
+      setUser(currentUser);
       setIsAdmin(false);
     }
   };
@@ -68,26 +72,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Mudança no estado de autenticação:", event, session?.user?.email);
-      
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       await updateUserState(session?.user || null);
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
@@ -104,13 +96,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: error.message,
       });
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
   const signOut = async () => {
-    setLoading(true);
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
@@ -128,8 +117,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Erro ao sair",
         description: error.message,
       });
-    } finally {
-      setLoading(false);
     }
   };
 
