@@ -98,12 +98,16 @@ const Consultas = () => {
                 <div>
                   <Label htmlFor="paciente">Paciente</Label>
                   <Select required>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione o paciente" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border shadow-lg">
                       {mockPacientes.map((paciente) => (
-                        <SelectItem key={paciente.id} value={String(paciente.id)}>
+                        <SelectItem 
+                          key={paciente.id} 
+                          value={String(paciente.id)}
+                          className="hover:bg-gray-100"
+                        >
                           {paciente.nome}
                         </SelectItem>
                       ))}
@@ -140,9 +144,13 @@ const Consultas = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border shadow-lg">
                       {tiposConsulta.map((tipo) => (
-                        <SelectItem key={tipo} value={tipo}>
+                        <SelectItem 
+                          key={tipo} 
+                          value={tipo}
+                          className="hover:bg-gray-100"
+                        >
                           {tipo}
                         </SelectItem>
                       ))}
