@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { FileText, Plus, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,10 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { useClinic } from "@/hooks/use-clinic";
 
 interface Patient {
   id: string;
@@ -50,6 +48,43 @@ const tiposExame = [
   "Eletrocardiograma",
 ];
 
+// Dados mockados
+const mockPatients: Patient[] = [
+  { id: "1", name: "João Silva" },
+  { id: "2", name: "Maria Santos" },
+  { id: "3", name: "Pedro Oliveira" },
+];
+
+const mockExams: Exam[] = [
+  {
+    id: "1",
+    patient_id: "1",
+    type: "Hemograma",
+    status: "pending",
+    exam_date: "2024-03-15T10:00:00",
+    result_notes: null,
+    patients: { name: "João Silva" }
+  },
+  {
+    id: "2",
+    patient_id: "2",
+    type: "Raio-X",
+    status: "completed",
+    exam_date: "2024-03-14T14:30:00",
+    result_notes: "Resultado normal",
+    patients: { name: "Maria Santos" }
+  },
+  {
+    id: "3",
+    patient_id: "3",
+    type: "Ultrassom",
+    status: "pending",
+    exam_date: "2024-03-16T09:15:00",
+    result_notes: null,
+    patients: { name: "Pedro Oliveira" }
+  },
+];
+
 const Exames = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,46 +94,9 @@ const Exames = () => {
   const [observacoes, setObservacoes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const clinicId = useClinic();
+  const [exams, setExams] = useState<Exam[]>(mockExams);
 
-  // Fetch patients for the select dropdown
-  const { data: patients } = useQuery({
-    queryKey: ["patients"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("patients")
-        .select("id, name")
-        .order("name");
-
-      if (error) throw error;
-      return data as Patient[];
-    },
-  });
-
-  // Fetch exams
-  const { data: exams, refetch: refetchExams } = useQuery({
-    queryKey: ["exams"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exams")
-        .select(`
-          id,
-          type,
-          status,
-          exam_date,
-          result_notes,
-          patients (
-            name
-          )
-        `)
-        .order("exam_date", { ascending: false });
-
-      if (error) throw error;
-      return data as Exam[];
-    },
-  });
-
-  const filteredExams = exams?.filter((exam) =>
+  const filteredExams = exams.filter((exam) =>
     exam.patients.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     exam.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -106,7 +104,7 @@ const Exames = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!paciente || !tipo || !data || !clinicId) {
+    if (!paciente || !tipo || !data) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos obrigatórios",
@@ -118,15 +116,19 @@ const Exames = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("exams").insert({
+      const newExam: Exam = {
+        id: String(exams.length + 1),
         patient_id: paciente,
         type: tipo,
+        status: "pending",
         exam_date: new Date(data).toISOString(),
         result_notes: observacoes || null,
-        clinic_id: clinicId
-      });
+        patients: {
+          name: mockPatients.find(p => p.id === paciente)?.name || ""
+        }
+      };
 
-      if (error) throw error;
+      setExams([...exams, newExam]);
 
       toast({
         title: "Exame cadastrado com sucesso!",
@@ -138,7 +140,6 @@ const Exames = () => {
       setData("");
       setObservacoes("");
       setIsOpen(false);
-      refetchExams();
     } catch (error) {
       console.error("Error scheduling exam:", error);
       toast({
@@ -152,9 +153,9 @@ const Exames = () => {
   };
 
   // Calculate statistics
-  const pendingExams = exams?.filter(exam => exam.status === "pending").length || 0;
-  const completedExams = exams?.filter(exam => exam.status === "completed").length || 0;
-  const totalExams = exams?.length || 0;
+  const pendingExams = exams.filter(exam => exam.status === "pending").length;
+  const completedExams = exams.filter(exam => exam.status === "completed").length;
+  const totalExams = exams.length;
 
   return (
     <div className="space-y-8">
@@ -191,7 +192,7 @@ const Exames = () => {
                     <SelectValue placeholder="Selecione o paciente" />
                   </SelectTrigger>
                   <SelectContent>
-                    {patients?.map((patient) => (
+                    {mockPatients.map((patient) => (
                       <SelectItem 
                         key={patient.id} 
                         value={patient.id}
@@ -319,7 +320,7 @@ const Exames = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {filteredExams?.map((exam) => (
+            {filteredExams.map((exam) => (
               <div
                 key={exam.id}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,8 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -22,7 +21,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useClinic } from "@/hooks/use-clinic";
 
 interface Patient {
   id: string;
@@ -33,37 +31,42 @@ interface Patient {
   created_at: string;
 }
 
+// Dados mockados
+const mockPatients: Patient[] = [
+  {
+    id: "1",
+    name: "João Silva",
+    email: "joao@example.com",
+    phone: "(11) 99999-9999",
+    birth_date: "1990-01-01",
+    created_at: "2024-01-01",
+  },
+  {
+    id: "2",
+    name: "Maria Santos",
+    email: "maria@example.com",
+    phone: "(11) 88888-8888",
+    birth_date: "1985-05-15",
+    created_at: "2024-01-02",
+  },
+  {
+    id: "3",
+    name: "Pedro Oliveira",
+    email: "pedro@example.com",
+    phone: "(11) 77777-7777",
+    birth_date: "1995-12-25",
+    created_at: "2024-01-03",
+  },
+];
+
 const Pacientes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  const clinicId = useClinic();
-
-  // Fetch patients
-  const { data: patients, isLoading } = useQuery({
-    queryKey: ["patients"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("patients")
-        .select("*")
-        .order("name");
-
-      if (error) {
-        console.error("Error fetching patients:", error);
-        toast({
-          title: "Erro ao carregar pacientes",
-          description: "Ocorreu um erro ao carregar a lista de pacientes.",
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      return data as Patient[];
-    },
-  });
+  const [patients, setPatients] = useState<Patient[]>(mockPatients);
 
   // Filter patients based on search term
-  const filteredPatients = patients?.filter((patient) =>
+  const filteredPatients = patients.filter((patient) =>
     patient.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -72,34 +75,16 @@ const Pacientes = () => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     
-    if (!clinicId) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível identificar a clínica",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const newPatient = {
+    const newPatient: Patient = {
+      id: String(patients.length + 1),
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       birth_date: formData.get("birth_date") as string,
-      clinic_id: clinicId
+      created_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from("patients").insert([newPatient]);
-
-    if (error) {
-      console.error("Error adding patient:", error);
-      toast({
-        title: "Erro ao adicionar paciente",
-        description: "Ocorreu um erro ao tentar adicionar o paciente.",
-        variant: "destructive",
-      });
-      return;
-    }
+    setPatients([...patients, newPatient]);
 
     toast({
       title: "Paciente adicionado",
@@ -183,20 +168,14 @@ const Pacientes = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {isLoading ? (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center">
-                Carregando pacientes...
-              </TableCell>
-            </TableRow>
-          ) : filteredPatients?.length === 0 ? (
+          {filteredPatients.length === 0 ? (
             <TableRow>
               <TableCell colSpan={4} className="text-center">
                 Nenhum paciente encontrado
               </TableCell>
             </TableRow>
           ) : (
-            filteredPatients?.map((patient) => (
+            filteredPatients.map((patient) => (
               <TableRow key={patient.id} className="cursor-pointer hover:bg-gray-50">
                 <TableCell className="font-medium">{patient.name}</TableCell>
                 <TableCell>{patient.email}</TableCell>

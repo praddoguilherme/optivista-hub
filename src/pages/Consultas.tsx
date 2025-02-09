@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Calendar, Plus, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,10 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { useClinic } from "@/hooks/use-clinic";
 
 interface Appointment {
   id: string;
@@ -32,6 +30,9 @@ interface Appointment {
   type: string;
   status: string;
   notes: string | null;
+  patients: {
+    name: string;
+  };
 }
 
 interface Patient {
@@ -47,6 +48,43 @@ const tiposConsulta = [
   "Avaliação",
 ];
 
+// Dados mockados
+const mockPatients: Patient[] = [
+  { id: "1", name: "João Silva" },
+  { id: "2", name: "Maria Santos" },
+  { id: "3", name: "Pedro Oliveira" },
+];
+
+const mockAppointments: Appointment[] = [
+  {
+    id: "1",
+    patient_id: "1",
+    appointment_date: "2024-03-15T10:00:00",
+    type: "Primeira Consulta",
+    status: "scheduled",
+    notes: null,
+    patients: { name: "João Silva" }
+  },
+  {
+    id: "2",
+    patient_id: "2",
+    appointment_date: "2024-03-15T14:30:00",
+    type: "Retorno",
+    status: "confirmed",
+    notes: "Paciente com melhora significativa",
+    patients: { name: "Maria Santos" }
+  },
+  {
+    id: "3",
+    patient_id: "3",
+    appointment_date: "2024-03-15T16:00:00",
+    type: "Emergência",
+    status: "scheduled",
+    notes: null,
+    patients: { name: "Pedro Oliveira" }
+  },
+];
+
 const Consultas = () => {
   const [date, setDate] = useState<Date>();
   const [isOpen, setIsOpen] = useState(false);
@@ -56,56 +94,12 @@ const Consultas = () => {
   const [observacoes, setObservacoes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const clinicId = useClinic();
-
-  // Fetch patients for the select dropdown
-  const { data: patients } = useQuery({
-    queryKey: ["patients"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("patients")
-        .select("id, name")
-        .order("name");
-
-      if (error) throw error;
-      return data as Patient[];
-    },
-  });
-
-  // Fetch today's appointments
-  const { data: appointments, refetch: refetchAppointments } = useQuery({
-    queryKey: ["appointments", "today"],
-    queryFn: async () => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const { data, error } = await supabase
-        .from("appointments")
-        .select(`
-          id,
-          appointment_date,
-          type,
-          status,
-          notes,
-          patients (
-            name
-          )
-        `)
-        .gte("appointment_date", today.toISOString())
-        .lt("appointment_date", tomorrow.toISOString())
-        .order("appointment_date");
-
-      if (error) throw error;
-      return data;
-    },
-  });
+  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!paciente || !date || !horario || !tipo || !clinicId) {
+    if (!paciente || !date || !horario || !tipo) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos obrigatórios",
@@ -121,15 +115,19 @@ const Consultas = () => {
       const appointmentDate = new Date(date);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes));
 
-      const { error } = await supabase.from("appointments").insert({
+      const newAppointment: Appointment = {
+        id: String(appointments.length + 1),
         patient_id: paciente,
         appointment_date: appointmentDate.toISOString(),
         type: tipo,
+        status: "scheduled",
         notes: observacoes || null,
-        clinic_id: clinicId
-      });
+        patients: {
+          name: mockPatients.find(p => p.id === paciente)?.name || ""
+        }
+      };
 
-      if (error) throw error;
+      setAppointments([...appointments, newAppointment]);
 
       toast({
         title: "Consulta agendada com sucesso!",
@@ -142,7 +140,6 @@ const Consultas = () => {
       setTipo("");
       setObservacoes("");
       setIsOpen(false);
-      refetchAppointments();
     } catch (error) {
       console.error("Error scheduling appointment:", error);
       toast({
@@ -157,19 +154,18 @@ const Consultas = () => {
 
   const handleConfirmarConsulta = async (appointmentId: string) => {
     try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ status: "confirmed" })
-        .eq("id", appointmentId);
-
-      if (error) throw error;
+      const updatedAppointments = appointments.map(appointment => 
+        appointment.id === appointmentId 
+          ? { ...appointment, status: "confirmed" }
+          : appointment
+      );
+      
+      setAppointments(updatedAppointments);
 
       toast({
         title: "Consulta confirmada!",
         description: "A consulta foi confirmada com sucesso.",
       });
-
-      refetchAppointments();
     } catch (error) {
       console.error("Error confirming appointment:", error);
       toast({
@@ -216,7 +212,7 @@ const Consultas = () => {
                       <SelectValue placeholder="Selecione o paciente" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border shadow-lg">
-                      {patients?.map((patient) => (
+                      {mockPatients.map((patient) => (
                         <SelectItem 
                           key={patient.id} 
                           value={patient.id}
@@ -321,7 +317,7 @@ const Consultas = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {appointments?.map((consulta) => (
+              {appointments.map((consulta) => (
                 <div
                   key={consulta.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
@@ -359,34 +355,4 @@ const Consultas = () => {
                         className="gap-1"
                       >
                         <Check className="h-4 w-4" />
-                        Confirmar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {appointments?.length === 0 && (
-                <p className="text-center text-gray-500">
-                  Nenhuma consulta agendada para hoje
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Calendário</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              Calendário de consultas será implementado em breve...
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default Consultas;
+                        
