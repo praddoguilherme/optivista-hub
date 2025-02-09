@@ -9,15 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, isAdmin, user, loading } = useAuth();
   const { toast } = useToast();
-  const location = useLocation();
 
-  // Se estiver carregando, mostra um indicador de loading
+  // Aguarda o estado de autenticação ser inicializado
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -26,16 +25,16 @@ const Login = () => {
     );
   }
 
-  // Se já estiver autenticado, redireciona
-  if (user && location.pathname === '/login') {
-    const redirectPath = isAdmin ? "/dashboard/admin" : "/dashboard";
-    return <Navigate to={redirectPath} replace />;
+  // Redireciona usuários autenticados
+  if (user) {
+    return <Navigate to={isAdmin ? "/dashboard/admin" : "/dashboard"} replace />;
   }
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (isLoading) return;
 
+    setIsLoading(true);
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
@@ -43,7 +42,7 @@ const Login = () => {
     try {
       await signIn(email, password);
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Erro no login:", error);
     } finally {
       setIsLoading(false);
     }
@@ -51,8 +50,9 @@ const Login = () => {
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (isLoading) return;
 
+    setIsLoading(true);
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
@@ -110,6 +110,7 @@ const Login = () => {
                     type="email"
                     placeholder="seu@email.com"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -120,12 +121,8 @@ const Login = () => {
                     type="password"
                     placeholder="••••••••"
                     required
+                    disabled={isLoading}
                   />
-                  <div className="text-sm text-right">
-                    <a href="#" className="text-primary hover:underline">
-                      Esqueceu sua senha?
-                    </a>
-                  </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Entrando..." : "Entrar"}
@@ -143,6 +140,7 @@ const Login = () => {
                     type="email"
                     placeholder="seu@email.com"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -153,6 +151,7 @@ const Login = () => {
                     type="password"
                     placeholder="••••••••"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -168,4 +167,3 @@ const Login = () => {
 };
 
 export default Login;
-

@@ -36,23 +36,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUserState = async (currentUser: User | null) => {
+    try {
+      if (currentUser) {
+        const adminStatus = await checkIfAdmin(currentUser.email!);
+        setUser(currentUser);
+        setIsAdmin(adminStatus);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar estado do usuário:', error);
+      setUser(null);
+      setIsAdmin(false);
+    }
+  };
+
   useEffect(() => {
-    // Verificar sessão atual
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUser(session.user);
-          const adminStatus = await checkIfAdmin(session.user.email!);
-          setIsAdmin(adminStatus);
-        } else {
-          setUser(null);
-          setIsAdmin(false);
-        }
+        await updateUserState(session?.user || null);
       } catch (error) {
         console.error('Erro ao inicializar auth:', error);
-        setUser(null);
-        setIsAdmin(false);
+        await updateUserState(null);
       } finally {
         setLoading(false);
       }
@@ -60,51 +68,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    // Escutar mudanças de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed:", _event, session?.user?.email);
-      if (session?.user) {
-        setUser(session.user);
-        const adminStatus = await checkIfAdmin(session.user.email!);
-        setIsAdmin(adminStatus);
-      } else {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Mudança no estado de autenticação:", event, session?.user?.email);
+      
+      if (event === 'SIGNED_OUT') {
         setUser(null);
         setIsAdmin(false);
+        setLoading(false);
+        return;
       }
+
+      setLoading(true);
+      await updateUserState(session?.user || null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      const isUserAdmin = await checkIfAdmin(email);
-      setIsAdmin(isUserAdmin);
-
       toast({
         title: "Login realizado com sucesso!",
-        description: `Bem-vindo ${isUserAdmin ? '(Administrador)' : ''} ao sistema.`,
+        description: "Bem-vindo ao sistema.",
       });
     } catch (error: any) {
-      console.error("Sign in error:", error);
+      console.error("Erro no login:", error);
       toast({
         variant: "destructive",
         title: "Erro no login",
         description: error.message,
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
+    setLoading(true);
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      setIsAdmin(false);
+
       setUser(null);
+      setIsAdmin(false);
+      
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso.",
@@ -115,6 +128,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Erro ao sair",
         description: error.message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -128,8 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
   }
   return context;
 }
-

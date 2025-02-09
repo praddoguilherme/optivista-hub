@@ -15,6 +15,7 @@ const DashboardLayout = () => {
     );
   }
 
+  // Redireciona para login se não estiver autenticado
   if (!user) {
     return <Navigate to="/login" replace />;
   }
