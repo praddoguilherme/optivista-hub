@@ -23,22 +23,27 @@ export const ClinicContext = createContext<ClinicContextType | undefined>(undefi
 export function ClinicProvider({ children }: { children: React.ReactNode }) {
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     if (user && location.pathname.startsWith('/dashboard')) {
-      loadClinic();
+      if (isAdmin) {
+        // Admin users don't need a specific clinic loaded
+        setLoading(false);
+      } else {
+        loadClinic();
+      }
     } else {
       setClinic(null);
       setLoading(false);
     }
-  }, [user, location.pathname]);
+  }, [user, isAdmin, location.pathname]);
 
   const loadClinic = async () => {
     try {
-      // First, check if user is admin
+      // Check user's clinic assignment
       const { data: clinicUser, error: roleError } = await supabase
         .from("clinic_users")
         .select("role, clinic_id")

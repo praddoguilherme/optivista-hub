@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import Pacientes from "./pages/Pacientes";
 import Consultas from "./pages/Consultas";
 import Exames from "./pages/Exames";
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<Dashboard />} />
+                <Route path="admin" element={<AdminDashboard />} />
                 <Route path="pacientes" element={<Pacientes />} />
                 <Route path="consultas" element={<Consultas />} />
                 <Route path="exames" element={<Exames />} />
