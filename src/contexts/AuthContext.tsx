@@ -10,6 +10,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,19 +18,43 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const checkIfAdmin = async (email: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('admins')
+        .select('email')
+        .eq('email', email)
+        .single();
+
+      if (error) throw error;
+      return !!data;
+    } catch (error) {
+      console.error('Erro ao verificar administrador:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
-    // Verifica o estado inicial da autenticação
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkIfAdmin(session.user.email!).then(setIsAdmin);
+      }
       setLoading(false);
     });
 
-    // Inscreve para mudanças no estado de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        const adminStatus = await checkIfAdmin(session.user.email!);
+        setIsAdmin(adminStatus);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -39,10 +64,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+
+      const isUserAdmin = await checkIfAdmin(email);
+      setIsAdmin(isUserAdmin);
+
       navigate('/dashboard');
       toast({
         title: "Login realizado com sucesso!",
-        description: "Bem-vindo ao sistema.",
+        description: `Bem-vindo ${isUserAdmin ? '(Administrador)' : ''} ao sistema.`,
       });
     } catch (error: any) {
       toast({
@@ -58,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      setIsAdmin(false);
       navigate('/');
       toast({
         title: "Logout realizado",
@@ -73,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut, loading }}>
+    <AuthContext.Provider value={{ user, signIn, signOut, loading, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
