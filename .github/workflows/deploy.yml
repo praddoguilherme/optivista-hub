@@ -1,3 +1,4 @@
+
 name: Deploy to GitHub Pages
 
 on:
@@ -23,12 +24,15 @@ jobs:
 
     - name: Build project
       run: npm run build
+      env:
+        VITE_APP_BASE_URL: /optivista-hub
 
-    - name: List build files
-      run: ls -la ./dist
+    - name: Create 404.html
+      run: cp dist/index.html dist/404.html
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3.8.0
       with:
         personal_token: ${{ secrets.PAT }}
         publish_dir: ./dist
+        enable_jekyll: false
