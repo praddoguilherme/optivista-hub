@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const mockConsultas = [
   {
@@ -58,16 +58,54 @@ const tiposConsulta = [
 const Consultas = () => {
   const [date, setDate] = useState<Date>();
   const [isOpen, setIsOpen] = useState(false);
+  const [paciente, setPaciente] = useState("");
+  const [horario, setHorario] = useState("");
+  const [tipo, setTipo] = useState("");
+  const [observacoes, setObservacoes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Consulta agendada",
-      description: "A consulta foi agendada com sucesso!",
-      duration: 3000,
-    });
-    setIsOpen(false);
+    
+    if (!paciente || !date || !horario || !tipo) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Simulando uma chamada de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const pacienteSelecionado = mockPacientes.find(p => String(p.id) === paciente);
+
+      toast({
+        title: "Consulta agendada com sucesso!",
+        description: `Agendamento confirmado para ${pacienteSelecionado?.nome} em ${date.toLocaleDateString()} às ${horario}`,
+      });
+
+      // Limpar formulário
+      setPaciente("");
+      setDate(undefined);
+      setHorario("");
+      setTipo("");
+      setObservacoes("");
+      setIsOpen(false);
+    } catch (error) {
+      toast({
+        title: "Erro ao agendar",
+        description: "Ocorreu um erro ao tentar agendar a consulta",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -97,7 +135,11 @@ const Consultas = () => {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="paciente">Paciente</Label>
-                  <Select required>
+                  <Select 
+                    required 
+                    value={paciente} 
+                    onValueChange={setPaciente}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione o paciente" />
                     </SelectTrigger>
@@ -133,6 +175,8 @@ const Consultas = () => {
                   <Input
                     type="time"
                     id="horario"
+                    value={horario}
+                    onChange={(e) => setHorario(e.target.value)}
                     required
                     className="col-span-3"
                   />
@@ -140,7 +184,11 @@ const Consultas = () => {
 
                 <div>
                   <Label htmlFor="tipo">Tipo de Consulta</Label>
-                  <Select required>
+                  <Select 
+                    required
+                    value={tipo}
+                    onValueChange={setTipo}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
@@ -162,6 +210,8 @@ const Consultas = () => {
                   <Label htmlFor="observacoes">Observações</Label>
                   <textarea
                     id="observacoes"
+                    value={observacoes}
+                    onChange={(e) => setObservacoes(e.target.value)}
                     className="w-full min-h-[100px] p-2 border rounded-md"
                     placeholder="Digite alguma observação importante..."
                   />
@@ -173,10 +223,16 @@ const Consultas = () => {
                   type="button"
                   variant="outline"
                   onClick={() => setIsOpen(false)}
+                  disabled={isSubmitting}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit">Agendar Consulta</Button>
+                <Button 
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Agendando..." : "Agendar Consulta"}
+                </Button>
               </div>
             </form>
           </DialogContent>
@@ -237,3 +293,4 @@ const Consultas = () => {
 };
 
 export default Consultas;
+
