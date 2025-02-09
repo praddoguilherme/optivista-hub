@@ -41,7 +41,7 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
       
       if (!selectedClinicId) {
         // Check if user has any clinics
-        const { data: userClinics, error: clinicsError } = await supabase
+        const { data: clinicData, error: clinicsError } = await supabase
           .from("clinic_users")
           .select("clinic_id")
           .eq("user_id", user?.id)
@@ -55,19 +55,28 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Use the first clinic found
-        localStorage.setItem("selectedClinicId", userClinics.clinic_id);
+        localStorage.setItem("selectedClinicId", clinicData.clinic_id);
+
+        // Load clinic details
+        const { data: clinicDetails, error: clinicError } = await supabase
+          .from("clinics")
+          .select("*")
+          .eq("id", clinicData.clinic_id)
+          .single();
+
+        if (clinicError) throw clinicError;
+        setClinic(clinicDetails);
+      } else {
+        // Load clinic details
+        const { data: clinicDetails, error: clinicError } = await supabase
+          .from("clinics")
+          .select("*")
+          .eq("id", selectedClinicId)
+          .single();
+
+        if (clinicError) throw clinicError;
+        setClinic(clinicDetails);
       }
-
-      // Load clinic details
-      const { data: clinicData, error: clinicError } = await supabase
-        .from("clinics")
-        .select("*")
-        .eq("id", selectedClinicId || userClinics.clinic_id)
-        .single();
-
-      if (clinicError) throw clinicError;
-
-      setClinic(clinicData);
     } catch (error) {
       console.error("Error loading clinic:", error);
       navigate("/clinic-setup");

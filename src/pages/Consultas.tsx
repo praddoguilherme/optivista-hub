@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar, Plus, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +23,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { useClinic } from "@/hooks/use-clinic";
 
 interface Appointment {
   id: string;
@@ -56,6 +56,7 @@ const Consultas = () => {
   const [observacoes, setObservacoes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { clinic } = useClinic();
 
   // Fetch patients for the select dropdown
   const { data: patients } = useQuery({
@@ -64,11 +65,13 @@ const Consultas = () => {
       const { data, error } = await supabase
         .from("patients")
         .select("id, name")
+        .eq("clinic_id", clinic?.id)
         .order("name");
 
       if (error) throw error;
       return data as Patient[];
     },
+    enabled: !!clinic?.id,
   });
 
   // Fetch today's appointments
@@ -92,6 +95,7 @@ const Consultas = () => {
             name
           )
         `)
+        .eq("clinic_id", clinic?.id)
         .gte("appointment_date", today.toISOString())
         .lt("appointment_date", tomorrow.toISOString())
         .order("appointment_date");
@@ -99,6 +103,7 @@ const Consultas = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !!clinic?.id,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,6 +131,7 @@ const Consultas = () => {
         appointment_date: appointmentDate.toISOString(),
         type: tipo,
         notes: observacoes || null,
+        clinic_id: clinic?.id,
       }]);
 
       if (error) throw error;
@@ -135,7 +141,7 @@ const Consultas = () => {
         description: `Agendamento confirmado para ${appointmentDate.toLocaleDateString()} às ${horario}`,
       });
 
-      // Limpar formulário
+      // Reset form
       setPaciente("");
       setDate(undefined);
       setHorario("");
