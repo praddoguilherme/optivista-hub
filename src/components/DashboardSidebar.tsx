@@ -1,25 +1,25 @@
-
 import { 
   LayoutDashboard, 
   Users, 
   Calendar, 
   FileText, 
   Settings, 
-  LogOut 
+  LogOut,
+  DollarSign 
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const menuItems = [
   {
@@ -41,6 +41,11 @@ const menuItems = [
     title: "Exames",
     icon: FileText,
     url: "/dashboard/exames"
+  },
+  {
+    title: "Financeiro",
+    icon: DollarSign,
+    url: "/dashboard/financeiro"
   },
   {
     title: "Configurações",
