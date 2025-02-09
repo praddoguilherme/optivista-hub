@@ -37,7 +37,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Verificar sessão atual
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -45,14 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session.user);
           const adminStatus = await checkIfAdmin(session.user.email!);
           setIsAdmin(adminStatus);
-        } else {
-          setUser(null);
-          setIsAdmin(false);
         }
       } catch (error) {
         console.error('Erro ao inicializar auth:', error);
-        setUser(null);
-        setIsAdmin(false);
       } finally {
         setLoading(false);
       }
@@ -60,9 +54,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    // Escutar mudanças de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed:", _event, session?.user?.email);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Mudança no estado de autenticação:", event, session?.user?.email);
+      setLoading(true);
+      
       if (session?.user) {
         setUser(session.user);
         const adminStatus = await checkIfAdmin(session.user.email!);
@@ -71,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setIsAdmin(false);
       }
+      
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -78,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
@@ -89,22 +87,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: `Bem-vindo ${isUserAdmin ? '(Administrador)' : ''} ao sistema.`,
       });
     } catch (error: any) {
-      console.error("Sign in error:", error);
+      console.error("Erro no login:", error);
       toast({
         variant: "destructive",
         title: "Erro no login",
         description: error.message,
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
       setIsAdmin(false);
       setUser(null);
+      
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso.",
@@ -115,6 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Erro ao sair",
         description: error.message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -128,8 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
   }
   return context;
 }
-
