@@ -23,7 +23,7 @@ const DashboardLayout = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <DashboardSidebar />
-        <main className="flex-1 p-8 bg-gray-50">
+        <main className="flex-1 px-8 py-6 ml-4 bg-gray-50">
           <Outlet />
         </main>
       </div>
