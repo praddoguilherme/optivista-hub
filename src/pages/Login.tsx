@@ -9,12 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, user, loading, isAdmin } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Mostra loading durante a verificação inicial de autenticação
   if (loading) {
@@ -27,7 +28,8 @@ const Login = () => {
 
   // Redireciona usuários já autenticados
   if (user) {
-    return <Navigate to={isAdmin ? "/dashboard/admin" : "/dashboard"} replace />;
+    console.log("User already authenticated, redirecting to dashboard");
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,6 +43,8 @@ const Login = () => {
 
     try {
       await signIn(email, password);
+      console.log("Login successful, navigating to dashboard");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Erro no login:", error);
     } finally {
