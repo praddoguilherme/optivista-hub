@@ -11,16 +11,26 @@ const Hero = () => {
   return (
     <section className="min-h-screen pb-20 relative bg-gradient-to-b from-white via-primary-light to-white">
       <div className="container mx-auto px-4 pt-32">
+        <div className="max-w-6xl mx-auto text-center mb-12">
+          <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary font-medium text-sm mb-6">
+            Nova geração de software para optometria
+          </div>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight tracking-tight mb-8">
+            Sistema para
+            <span className="text-primary block mt-2">Gestão em Optometria</span>
+          </h1>
+        </div>
+
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="text-left space-y-6 animate-fade-up">
-              <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary font-medium text-sm mb-4">
-                Nova geração de software para optometria
+            <div className="flex justify-center items-center animate-fade-up order-2 lg:order-1">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent rounded-full filter blur-3xl"></div>
+                <EyeAnimation />
               </div>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight tracking-tight">
-                Sistema para
-                <span className="text-primary block mt-2">Gestão em Optometria</span>
-              </h1>
+            </div>
+            
+            <div className="text-left space-y-6 animate-fade-up order-1 lg:order-2">
               <p className="text-xl text-gray-600 leading-relaxed">
                 Simplifique sua prática com nossa solução completa para profissionais.
                 Gerencie pacientes, exames e prescrições em um ambiente integrado.
@@ -32,12 +42,6 @@ const Hero = () => {
                 <button className="w-full sm:w-auto px-8 py-4 text-primary bg-white/90 backdrop-blur rounded-lg hover:bg-primary-hover hover:text-white transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl font-medium">
                   Saber Mais
                 </button>
-              </div>
-            </div>
-            <div className="flex justify-center items-center animate-fade-up">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent rounded-full filter blur-3xl"></div>
-                <EyeAnimation />
               </div>
             </div>
           </div>
