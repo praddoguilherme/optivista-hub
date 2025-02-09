@@ -1,6 +1,27 @@
 
-import { Calendar } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 const mockConsultas = [
   {
@@ -19,12 +40,139 @@ const mockConsultas = [
   },
 ];
 
+const mockPacientes = [
+  { id: 1, nome: "Maria Silva" },
+  { id: 2, nome: "João Santos" },
+  { id: 3, nome: "Ana Oliveira" },
+  { id: 4, nome: "Pedro Costa" },
+];
+
+const tiposConsulta = [
+  "Primeira Consulta",
+  "Retorno",
+  "Rotina",
+  "Emergência",
+  "Avaliação",
+];
+
 const Consultas = () => {
+  const [date, setDate] = useState<Date>();
+  const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Consulta agendada",
+      description: "A consulta foi agendada com sucesso!",
+      duration: 3000,
+    });
+    setIsOpen(false);
+  };
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Consultas</h1>
-        <p className="text-gray-600 mt-2">Gerencie suas consultas</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Consultas</h1>
+          <p className="text-gray-600 mt-2">Gerencie suas consultas</p>
+        </div>
+
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Nova Consulta
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Agendar Nova Consulta</DialogTitle>
+              <DialogDescription>
+                Preencha os dados para agendar uma nova consulta
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="paciente">Paciente</Label>
+                  <Select required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o paciente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockPacientes.map((paciente) => (
+                        <SelectItem key={paciente.id} value={String(paciente.id)}>
+                          {paciente.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Data da Consulta</Label>
+                  <div className="border rounded-md p-4 mt-2">
+                    <CalendarComponent
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      className="mx-auto"
+                      disabled={(date) => date < new Date()}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="horario">Horário</Label>
+                  <Input
+                    type="time"
+                    id="horario"
+                    required
+                    className="col-span-3"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="tipo">Tipo de Consulta</Label>
+                  <Select required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tiposConsulta.map((tipo) => (
+                        <SelectItem key={tipo} value={tipo}>
+                          {tipo}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="observacoes">Observações</Label>
+                  <textarea
+                    id="observacoes"
+                    className="w-full min-h-[100px] p-2 border rounded-md"
+                    placeholder="Digite alguma observação importante..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit">Agendar Consulta</Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -41,7 +189,7 @@ const Consultas = () => {
               {mockConsultas.map((consulta) => (
                 <div
                   key={consulta.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <div>
                     <h3 className="font-medium">{consulta.paciente}</h3>
