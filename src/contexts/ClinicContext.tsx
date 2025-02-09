@@ -1,6 +1,6 @@
 
 import { createContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "./AuthContext";
 
@@ -25,15 +25,17 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (user) {
+    // Só verifica clínica se o usuário estiver logado e em uma rota protegida
+    if (user && location.pathname.startsWith('/dashboard')) {
       loadSelectedClinic();
     } else {
       setClinic(null);
       setLoading(false);
     }
-  }, [user]);
+  }, [user, location.pathname]);
 
   const loadSelectedClinic = async () => {
     try {
