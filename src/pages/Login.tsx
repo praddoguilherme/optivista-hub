@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,6 @@ const Login = () => {
     try {
       await signIn(email, password);
       console.log("Login successful");
-      // Usando replace para evitar que o usuário volte para a página de login
       navigate("/dashboard", { replace: true });
     } catch (error: any) {
       console.error("Erro no login:", error);

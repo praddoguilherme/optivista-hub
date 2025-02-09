@@ -21,7 +21,7 @@ const DashboardLayout = () => {
   // Se não houver usuário autenticado, redireciona para o login
   if (!user) {
     console.log("No authenticated user, redirecting to login");
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" />;
   }
 
   return (

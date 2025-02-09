@@ -20,15 +20,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
-  // Função para verificar se o usuário é admin
+  // Função para verificar se o usuário é admin usando a nova função SQL
   const checkIsAdmin = async (email: string): Promise<boolean> => {
     try {
-      const { data } = await supabase
-        .from('admins')
-        .select('email')
-        .eq('email', email)
-        .single();
-      return !!data;
+      const { data, error } = await supabase.rpc('check_is_admin', {
+        user_email: email
+      });
+      
+      if (error) {
+        console.error('Erro ao verificar admin:', error);
+        return false;
+      }
+      
+      return data || false;
     } catch (error) {
       console.error('Erro ao verificar admin:', error);
       return false;
@@ -37,12 +41,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Função para atualizar o estado do usuário
   const updateUserState = async (currentUser: User | null) => {
-    if (currentUser) {
-      const isUserAdmin = await checkIsAdmin(currentUser.email!);
+    try {
+      if (currentUser) {
+        const isUserAdmin = await checkIsAdmin(currentUser.email!);
+        console.log('User admin status:', isUserAdmin);
+        setUser(currentUser);
+        setIsAdmin(isUserAdmin);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error('Error updating user state:', error);
       setUser(currentUser);
-      setIsAdmin(isUserAdmin);
-    } else {
-      setUser(null);
       setIsAdmin(false);
     }
   };
