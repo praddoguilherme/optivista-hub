@@ -9,7 +9,7 @@ const Footer = () => {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Eye className="w-6 h-6 text-primary" />
-              <span className="text-xl font-semibold text-primary">OptiVista</span>
+              <span className="text-xl font-semibold text-primary">Íris</span>
             </div>
             <p className="text-gray-600">
               Transformando a gestão de clínicas de optometria com tecnologia avançada.
@@ -44,7 +44,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-gray-100 mt-12 pt-8 text-center text-gray-600">
-          <p>&copy; {new Date().getFullYear()} OptiVista. Todos os direitos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Íris. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

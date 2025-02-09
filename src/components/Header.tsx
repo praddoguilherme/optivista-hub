@@ -8,7 +8,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-2">
             <Eye className="w-6 h-6 text-primary" />
-            <span className="text-xl font-semibold text-primary">OptiVista</span>
+            <span className="text-xl font-semibold text-primary">Íris</span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
             <a href="#recursos" className="text-gray-600 hover:text-primary transition-colors">
