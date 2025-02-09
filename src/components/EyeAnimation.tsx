@@ -87,7 +87,7 @@ const EyeAnimation = () => {
   return (
     <div 
       ref={containerRef} 
-      className="w-[400px] h-[400px] mx-auto hover:scale-105 transition-transform duration-300"
+      className="w-[400px] h-[400px] mx-auto shadow-[0_0_40px_rgba(74,144,160,0.4)] bg-white/10 rounded-full"
     />
   );
 };
