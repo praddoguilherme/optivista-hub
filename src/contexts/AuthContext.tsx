@@ -20,14 +20,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
-  const checkIfAdmin = async (email: string) => {
-    if (!email) return false;
+  // Função para verificar se o usuário é admin
+  const checkIsAdmin = async (email: string): Promise<boolean> => {
     try {
       const { data } = await supabase
         .from('admins')
         .select('email')
         .eq('email', email)
-        .maybeSingle();
+        .single();
       return !!data;
     } catch (error) {
       console.error('Erro ao verificar admin:', error);
@@ -35,58 +35,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Função para atualizar o estado do usuário
   const updateUserState = async (currentUser: User | null) => {
-    try {
-      if (currentUser) {
-        setUser(currentUser);
-        const adminStatus = await checkIfAdmin(currentUser.email!);
-        setIsAdmin(adminStatus);
-      } else {
-        setUser(null);
-        setIsAdmin(false);
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar estado do usuário:', error);
+    if (currentUser) {
+      const isUserAdmin = await checkIsAdmin(currentUser.email!);
+      setUser(currentUser);
+      setIsAdmin(isUserAdmin);
+    } else {
+      setUser(null);
+      setIsAdmin(false);
     }
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    const initAuth = async () => {
+    // Buscar sessão inicial
+    const initSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
-        if (mounted) {
-          await updateUserState(session?.user || null);
-          setLoading(false);
-        }
+        await updateUserState(session?.user || null);
       } catch (error) {
-        console.error('Erro na inicialização do auth:', error);
-        if (mounted) {
-          setLoading(false);
-        }
+        console.error('Erro ao inicializar sessão:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
-        
-        if (!mounted) return;
+    // Monitorar mudanças na autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email);
+      await updateUserState(session?.user || null);
+    });
 
-        if (session?.user) {
-          await updateUserState(session.user);
-        } else {
-          await updateUserState(null);
-        }
-      }
-    );
-
-    initAuth();
+    initSession();
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -101,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Bem-vindo ao sistema.",
       });
     } catch (error: any) {
-      console.error("Erro no login:", error);
+      console.error('Erro no login:', error);
       toast({
         variant: "destructive",
         title: "Erro no login",
@@ -121,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Você foi desconectado com sucesso.",
       });
     } catch (error: any) {
+      console.error('Erro ao fazer logout:', error);
       toast({
         variant: "destructive",
         title: "Erro ao sair",

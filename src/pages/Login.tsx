@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,28 +9,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, isAdmin, user, loading } = useAuth();
+  const { signIn, user, loading, isAdmin } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  // Efeito para lidar com redirecionamento após login
-  useEffect(() => {
-    if (user && !loading) {
-      navigate(isAdmin ? "/dashboard/admin" : "/dashboard", { replace: true });
-    }
-  }, [user, loading, isAdmin, navigate]);
-
-  // Mostra loading apenas durante a verificação inicial de autenticação
+  // Mostra loading durante a verificação inicial de autenticação
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
+  }
+
+  // Redireciona usuários já autenticados
+  if (user) {
+    return <Navigate to={isAdmin ? "/dashboard/admin" : "/dashboard"} replace />;
   }
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
