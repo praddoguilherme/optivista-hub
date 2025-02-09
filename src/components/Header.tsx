@@ -1,7 +1,10 @@
 
 import { Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const navigate = useNavigate();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100">
       <div className="container mx-auto px-4">
@@ -22,7 +25,10 @@ const Header = () => {
             </a>
           </nav>
           <div className="flex items-center space-x-4">
-            <button className="hidden md:inline-flex px-4 py-2 text-primary hover:bg-primary-light rounded-lg transition-colors">
+            <button 
+              onClick={() => navigate("/login")}
+              className="hidden md:inline-flex px-4 py-2 text-primary hover:bg-primary-light rounded-lg transition-colors"
+            >
               Entrar
             </button>
             <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
