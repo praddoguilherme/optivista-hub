@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,13 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, isAdmin, user, loading } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const location = useLocation();
 
   // Se estiver carregando, mostra um indicador de loading
   if (loading) {
@@ -26,8 +27,9 @@ const Login = () => {
   }
 
   // Se já estiver autenticado, redireciona
-  if (user) {
-    return <Navigate to={isAdmin ? "/dashboard/admin" : "/dashboard"} replace />;
+  if (user && location.pathname === '/login') {
+    const redirectPath = isAdmin ? "/dashboard/admin" : "/dashboard";
+    return <Navigate to={redirectPath} replace />;
   }
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -40,9 +42,8 @@ const Login = () => {
 
     try {
       await signIn(email, password);
-      navigate(isAdmin ? "/dashboard/admin" : "/dashboard", { replace: true });
     } catch (error) {
-      console.error("Erro no login:", error);
+      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -167,3 +168,4 @@ const Login = () => {
 };
 
 export default Login;
+
