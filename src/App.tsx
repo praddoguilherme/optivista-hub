@@ -17,12 +17,11 @@ import Configuracoes from "./pages/Configuracoes";
 import Financeiro from "./pages/Financeiro";
 
 const queryClient = new QueryClient();
-const basename = import.meta.env.MODE === 'production' ? '/optivista-hub' : '/';
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <BrowserRouter basename={basename}>
+      <BrowserRouter>
         <AuthProvider>
           <Toaster />
           <Sonner />
