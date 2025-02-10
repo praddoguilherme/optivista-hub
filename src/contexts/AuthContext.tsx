@@ -17,78 +17,39 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Comentando temporariamente a verificação de autenticação
   useEffect(() => {
-    // Verifica o estado inicial da autenticação
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Inscreve para mudanças no estado de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    setLoading(false);
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      navigate('/dashboard');
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo ao sistema.",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro no login",
-        description: error.message,
-      });
-      throw error;
-    }
+    // Desabilitando temporariamente o login
+    toast({
+      title: "Login desabilitado",
+      description: "O login está temporariamente desabilitado.",
+    });
+    navigate('/dashboard');
   };
 
   const signUp = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      toast({
-        title: "Cadastro realizado!",
-        description: "Verifique seu email para confirmar o cadastro.",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro no cadastro",
-        description: error.message,
-      });
-      throw error;
-    }
+    // Desabilitando temporariamente o registro
+    toast({
+      title: "Registro desabilitado",
+      description: "O registro está temporariamente desabilitado.",
+    });
   };
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      navigate('/');
-      toast({
-        title: "Logout realizado",
-        description: "Você foi desconectado com sucesso.",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao sair",
-        description: error.message,
-      });
-    }
+    // Desabilitando temporariamente o logout
+    toast({
+      title: "Logout desabilitado",
+      description: "O logout está temporariamente desabilitado.",
+    });
+    navigate('/');
   };
 
   return (
