@@ -27,12 +27,12 @@ jobs:
       env:
         VITE_APP_BASE_URL: /optivista-hub
 
-    - name: Create 404.html
-      run: cp dist/index.html dist/404.html
-
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3.8.0
       with:
         personal_token: ${{ secrets.PAT }}
         publish_dir: ./dist
         enable_jekyll: false
+        commit_message: "Deploy to GitHub Pages"
+        force_orphan: true
+
