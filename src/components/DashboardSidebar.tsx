@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 
 const menuItems = [
   {
@@ -63,6 +64,7 @@ const DashboardSidebar = () => {
   const { signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
@@ -70,6 +72,13 @@ const DashboardSidebar = () => {
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleNavigate = (url: string) => {
+    navigate(url);
+    if (isMobile) {
+      setIsOpen(false);
+    }
   };
 
   const sidebarContent = (
@@ -95,10 +104,7 @@ const DashboardSidebar = () => {
                     <Button 
                       variant="ghost" 
                       className="w-full justify-start py-6 text-base hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                      onClick={() => {
-                        window.location.href = item.url;
-                        if (isMobile) setIsOpen(false);
-                      }}
+                      onClick={() => handleNavigate(item.url)}
                     >
                       <item.icon className="mr-4 h-5 w-5" />
                       <span>{item.title}</span>
@@ -136,6 +142,13 @@ const DashboardSidebar = () => {
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
+        
+        <div 
+          className={`fixed inset-0 bg-black/50 transition-opacity duration-300 z-30 ${
+            isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setIsOpen(false)}
+        />
         
         <Sidebar 
           className={`fixed inset-y-0 left-0 w-72 transform transition-transform duration-300 ease-in-out z-40 bg-white/80 backdrop-blur-lg ${
