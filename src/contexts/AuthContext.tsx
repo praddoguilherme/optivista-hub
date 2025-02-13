@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: (email: string, password: string) => Promise<void>;
   loading: boolean;
 }
 
@@ -17,35 +17,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Comentando temporariamente a verificação de autenticação
   useEffect(() => {
-    setLoading(false);
-    /* Código original comentado
+    // Verifica o estado inicial da autenticação
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
+    // Inscreve para mudanças no estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
-    */
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    // Desabilitando temporariamente o login
-    toast({
-      title: "Login desabilitado",
-      description: "O login está temporariamente desabilitado.",
-    });
-    navigate('/');  // Redirecionando para a página inicial
-    /* Código original comentado
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
@@ -62,42 +53,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       throw error;
     }
-    */
   };
 
   const signUp = async (email: string, password: string) => {
-    // Desabilitando temporariamente o registro
+    // Mantendo o registro desabilitado
     toast({
       title: "Registro desabilitado",
-      description: "O registro está temporariamente desabilitado.",
+      description: "No momento, novos registros estão desabilitados. Entre em contato com o administrador.",
     });
-    /* Código original comentado
-    try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      toast({
-        title: "Cadastro realizado!",
-        description: "Verifique seu email para confirmar o cadastro.",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro no cadastro",
-        description: error.message,
-      });
-      throw error;
-    }
-    */
   };
 
   const signOut = async () => {
-    // Desabilitando temporariamente o logout
-    toast({
-      title: "Logout desabilitado",
-      description: "O logout está temporariamente desabilitado.",
-    });
-    navigate('/');
-    /* Código original comentado
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
@@ -113,7 +79,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: error.message,
       });
     }
-    */
   };
 
   return (
