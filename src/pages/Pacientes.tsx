@@ -94,20 +94,20 @@ const Pacientes = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-8 max-w-[100vw] overflow-x-hidden px-1">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Pacientes</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Pacientes</h1>
           <p className="text-gray-600 mt-2">Gerencie seus pacientes</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="whitespace-nowrap">
               <UserPlus className="mr-2 h-4 w-4" />
               Novo Paciente
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-[95vw] sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Adicionar Novo Paciente</DialogTitle>
               <DialogDescription>
@@ -158,38 +158,42 @@ const Pacientes = () => {
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Telefone</TableHead>
-            <TableHead>Data de Nascimento</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredPatients.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center">
-                Nenhum paciente encontrado
-              </TableCell>
-            </TableRow>
-          ) : (
-            filteredPatients.map((patient) => (
-              <TableRow key={patient.id} className="cursor-pointer hover:bg-gray-50">
-                <TableCell className="font-medium">{patient.name}</TableCell>
-                <TableCell>{patient.email}</TableCell>
-                <TableCell>{patient.phone}</TableCell>
-                <TableCell>
-                  {patient.birth_date
-                    ? new Date(patient.birth_date).toLocaleDateString()
-                    : "-"}
-                </TableCell>
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <div className="inline-block min-w-full align-middle">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead className="hidden sm:table-cell">Email</TableHead>
+                <TableHead className="hidden sm:table-cell">Telefone</TableHead>
+                <TableHead>Data de Nascimento</TableHead>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredPatients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">
+                    Nenhum paciente encontrado
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredPatients.map((patient) => (
+                  <TableRow key={patient.id} className="cursor-pointer hover:bg-gray-50">
+                    <TableCell className="font-medium">{patient.name}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{patient.email}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{patient.phone}</TableCell>
+                    <TableCell>
+                      {patient.birth_date
+                        ? new Date(patient.birth_date).toLocaleDateString()
+                        : "-"}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 };

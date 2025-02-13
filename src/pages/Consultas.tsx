@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar, Plus, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -177,21 +176,21 @@ const Consultas = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-8 max-w-[100vw] overflow-x-hidden px-1">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Consultas</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Consultas</h1>
           <p className="text-gray-600 mt-2">Gerencie suas consultas</p>
         </div>
 
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="whitespace-nowrap gap-2">
               <Plus className="h-4 w-4" />
               Nova Consulta
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="max-w-[95vw] sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Agendar Nova Consulta</DialogTitle>
               <DialogDescription>
@@ -308,7 +307,7 @@ const Consultas = () => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
@@ -320,7 +319,7 @@ const Consultas = () => {
               {appointments.map((consulta) => (
                 <div
                   key={consulta.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors gap-4"
                 >
                   <div>
                     <h3 className="font-medium">{consulta.patients.name}</h3>
@@ -334,7 +333,7 @@ const Consultas = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-sm ${
+                      className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
                         consulta.status === "scheduled"
                           ? "bg-yellow-100 text-yellow-800"
                           : consulta.status === "confirmed"
@@ -352,7 +351,7 @@ const Consultas = () => {
                       <Button
                         size="sm"
                         onClick={() => handleConfirmarConsulta(consulta.id)}
-                        className="gap-1"
+                        className="gap-1 whitespace-nowrap"
                       >
                         <Check className="h-4 w-4" />
                         Confirmar
