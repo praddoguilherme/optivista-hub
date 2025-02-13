@@ -3,9 +3,11 @@ import { Navigate, Outlet } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const DashboardLayout = () => {
   const { user, loading } = useAuth();
+  const isMobile = useIsMobile();
 
   if (loading) {
     return (
@@ -23,7 +25,7 @@ const DashboardLayout = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <DashboardSidebar />
-        <main className="flex-1 px-8 py-6 ml-4 bg-gray-50">
+        <main className={`flex-1 px-4 md:px-8 py-6 ${isMobile ? 'ml-0' : 'ml-4'} bg-gray-50`}>
           <Outlet />
         </main>
       </div>
