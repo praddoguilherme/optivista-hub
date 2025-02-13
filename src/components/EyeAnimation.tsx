@@ -12,10 +12,17 @@ const EyeAnimation = () => {
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     
-    // Ajuste responsivo do tamanho
+    // Ajuste responsivo do tamanho com dimensões reduzidas para mobile
     const updateSize = () => {
-      const width = Math.min(400, window.innerWidth - 40); // 40px de padding
+      const isMobile = window.innerWidth < 768;
+      const maxWidth = isMobile ? 300 : 400; // Reduzido de 400 para 300 no mobile
+      const padding = isMobile ? 20 : 40; // Reduzido o padding no mobile
+      const width = Math.min(maxWidth, window.innerWidth - padding);
       renderer.setSize(width, width);
+      
+      // Ajusta a escala dos objetos na cena para prevenir deformação
+      const scale = isMobile ? 0.85 : 1; // Reduz a escala em 15% no mobile
+      scene.scale.set(scale, scale, scale);
     };
     
     updateSize();
