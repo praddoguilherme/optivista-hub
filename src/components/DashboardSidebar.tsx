@@ -82,7 +82,7 @@ const DashboardSidebar = () => {
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       {/* Logo Section */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-3 justify-center">
@@ -133,36 +133,38 @@ const DashboardSidebar = () => {
 
   if (isMobile) {
     return (
-      <>
+      <div className="relative">
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50"
+          className="fixed top-4 left-4 z-[60]"
           onClick={toggleSidebar}
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
         
+        {/* Overlay */}
         <div 
-          className={`fixed inset-0 bg-black/50 transition-opacity duration-300 z-30 ${
+          className={`fixed inset-0 bg-black/50 transition-opacity duration-300 z-[51] ${
             isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           onClick={() => setIsOpen(false)}
         />
         
-        <Sidebar 
-          className={`fixed inset-y-0 left-0 w-72 transform transition-transform duration-300 ease-in-out z-40 bg-white/80 backdrop-blur-lg ${
+        {/* Sidebar Mobile */}
+        <aside 
+          className={`fixed inset-y-0 left-0 w-[280px] transform transition-transform duration-300 ease-in-out z-[52] bg-white shadow-xl ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           {sidebarContent}
-        </Sidebar>
-      </>
+        </aside>
+      </div>
     );
   }
 
   return (
-    <Sidebar className="border-r border-gray-200 bg-white/80 backdrop-blur-lg w-72 min-h-screen">
+    <Sidebar className="border-r border-gray-200 bg-white w-72 min-h-screen">
       {sidebarContent}
     </Sidebar>
   );
