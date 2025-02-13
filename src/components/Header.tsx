@@ -1,6 +1,7 @@
 
 import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ const Header = () => {
             <Eye className="w-6 h-6 text-primary" />
             <span className="text-xl font-semibold text-primary">Íris</span>
           </div>
+          
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <a href="#recursos" className="text-gray-600 hover:text-primary transition-colors">
               Recursos
@@ -24,16 +27,24 @@ const Header = () => {
               Contato
             </a>
           </nav>
-          <div className="flex items-center space-x-4">
-            <button 
+          
+          {/* Login/Start Buttons - Responsive */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost"
+              className="text-primary hover:bg-primary-light"
               onClick={() => navigate("/login")}
-              className="hidden md:inline-flex px-4 py-2 text-primary hover:bg-primary-light rounded-lg transition-colors"
             >
-              Entrar
-            </button>
-            <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
-              Começar Agora
-            </button>
+              <span className="hidden md:inline">Entrar</span>
+              <span className="md:hidden">Login</span>
+            </Button>
+            <Button 
+              className="bg-primary text-white hover:bg-primary-hover"
+              onClick={() => navigate("/login")}
+            >
+              <span className="hidden md:inline">Começar Agora</span>
+              <span className="md:hidden">Registrar</span>
+            </Button>
           </div>
         </div>
       </div>

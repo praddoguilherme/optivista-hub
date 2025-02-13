@@ -1,4 +1,3 @@
-
 import { Monitor, Glasses, UserRound, ChevronDown } from "lucide-react";
 import EyeAnimation from "./EyeAnimation";
 
@@ -10,36 +9,36 @@ const Hero = () => {
 
   return (
     <section className="min-h-screen pb-20 relative bg-gradient-to-b from-white via-primary-light to-white">
-      <div className="container mx-auto px-4 pt-32">
-        <div className="max-w-6xl mx-auto text-center mb-12">
+      <div className="container mx-auto px-4 pt-20 md:pt-32">
+        <div className="max-w-6xl mx-auto text-center mb-8 md:mb-12">
           <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary font-medium text-sm mb-6">
             Nova geração de software para optometria
           </div>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight tracking-tight mb-8">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight tracking-tight mb-8">
             Sistema para
             <span className="text-primary block mt-2">Gestão em Optometria</span>
           </h1>
         </div>
 
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="flex justify-center items-center animate-fade-up order-2 lg:order-1">
-              <div className="relative">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div className="flex justify-center items-center animate-fade-up order-1 lg:order-1">
+              <div className="relative w-full max-w-[300px] md:max-w-[400px] mx-auto">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent rounded-full filter blur-3xl"></div>
                 <EyeAnimation />
               </div>
             </div>
             
-            <div className="text-left space-y-6 animate-fade-up order-1 lg:order-2">
-              <p className="text-xl text-gray-600 leading-relaxed">
+            <div className="text-left space-y-6 animate-fade-up order-2 lg:order-2">
+              <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
                 Simplifique sua prática com nossa solução completa para profissionais.
                 Gerencie pacientes, exames e prescrições em um ambiente integrado.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-4 pt-4">
-                <button className="w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl font-medium">
+                <button className="w-full sm:w-auto px-6 md:px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl font-medium">
                   Agendar Demonstração
                 </button>
-                <button className="w-full sm:w-auto px-8 py-4 text-primary bg-white/90 backdrop-blur rounded-lg hover:bg-primary-hover hover:text-white transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl font-medium">
+                <button className="w-full sm:w-auto px-6 md:px-8 py-4 text-primary bg-white/90 backdrop-blur rounded-lg hover:bg-primary-hover hover:text-white transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl font-medium">
                   Saber Mais
                 </button>
               </div>
@@ -47,7 +46,7 @@ const Hero = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-16 md:mt-20">
           {[
             {
               icon: Monitor,
