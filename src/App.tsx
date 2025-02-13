@@ -1,7 +1,7 @@
 
 import { useRoutes } from "react-router-dom";
 import "./App.css";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthContextProvider } from "./contexts/AuthContext";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Configuracoes from "./pages/Configuracoes";
 import Consultas from "./pages/Consultas";
@@ -74,7 +74,7 @@ function App() {
     },
   ]);
 
-  return <AuthProvider>{routes}</AuthProvider>;
+  return <AuthContextProvider>{routes}</AuthContextProvider>;
 }
 
 export default App;
