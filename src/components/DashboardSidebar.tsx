@@ -58,6 +58,10 @@ const menuItems = [
 const DashboardSidebar = () => {
   const { signOut } = useAuth();
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <Sidebar className="border-r border-gray-200 bg-white/80 backdrop-blur-lg w-72 min-h-screen">
       <div className="flex flex-col h-full">
@@ -100,7 +104,7 @@ const DashboardSidebar = () => {
           <Button 
             variant="ghost" 
             className="w-full justify-start py-6 text-base hover:bg-red-50 text-red-600 hover:text-red-700 transition-all duration-200"
-            onClick={signOut}
+            onClick={handleSignOut}
           >
             <LogOut className="mr-4 h-5 w-5" />
             <span>Sair</span>

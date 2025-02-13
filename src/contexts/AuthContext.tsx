@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
-  signOut: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;  // Corrigido: removido os parâmetros desnecessários
   loading: boolean;
 }
 
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const signOut = async () => {
+  const signOut = async () => {  // Corrigido: removido os parâmetros desnecessários
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
