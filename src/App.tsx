@@ -1,80 +1,47 @@
 
-import { useRoutes } from "react-router-dom";
-import "./App.css";
-import { AuthContextProvider } from "./contexts/AuthContext";
-import DashboardLayout from "./layouts/DashboardLayout";
-import Configuracoes from "./pages/Configuracoes";
-import Consultas from "./pages/Consultas";
-import Dashboard from "./pages/Dashboard";
-import Exames from "./pages/Exames";
-import Financeiro from "./pages/Financeiro";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import DashboardLayout from "./layouts/DashboardLayout";
+import Dashboard from "./pages/Dashboard";
 import Pacientes from "./pages/Pacientes";
-import { useLayoutEffect } from "react";
+import Consultas from "./pages/Consultas";
+import Exames from "./pages/Exames";
+import Configuracoes from "./pages/Configuracoes";
+import Financeiro from "./pages/Financeiro";
 
-const setFavicon = () => {
-  const links = document.querySelectorAll("link[rel*='icon']");
-  links.forEach(link => link.remove());
-  
-  const newIcon = document.createElement('link');
-  newIcon.rel = 'icon';
-  newIcon.href = '/favicon-eye.ico';
-  document.head.appendChild(newIcon);
-};
+const queryClient = new QueryClient();
 
-function App() {
-  useLayoutEffect(() => {
-    setFavicon();
-  }, []);
-
-  const routes = useRoutes([
-    {
-      path: "/",
-      element: <Index />,
-    },
-    {
-      path: "/login",
-      element: <Login />,
-    },
-    {
-      path: "/dashboard",
-      element: <DashboardLayout />,
-      children: [
-        {
-          path: "",
-          element: <Dashboard />,
-        },
-        {
-          path: "pacientes",
-          element: <Pacientes />,
-        },
-        {
-          path: "consultas",
-          element: <Consultas />,
-        },
-        {
-          path: "exames",
-          element: <Exames />,
-        },
-        {
-          path: "financeiro",
-          element: <Financeiro />,
-        },
-        {
-          path: "configuracoes",
-          element: <Configuracoes />,
-        },
-      ],
-    },
-    {
-      path: "*",
-      element: <NotFound />,
-    },
-  ]);
-
-  return <AuthContextProvider>{routes}</AuthContextProvider>;
-}
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="pacientes" element={<Pacientes />} />
+              <Route path="consultas" element={<Consultas />} />
+              <Route path="exames" element={<Exames />} />
+              <Route path="financeiro" element={<Financeiro />} />
+              <Route path="configuracoes" element={<Configuracoes />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
