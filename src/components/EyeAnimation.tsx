@@ -11,11 +11,19 @@ const EyeAnimation = () => {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(400, 400); // Mantendo 400x400
+    
+    // Ajuste responsivo do tamanho
+    const updateSize = () => {
+      const width = Math.min(400, window.innerWidth - 40); // 40px de padding
+      renderer.setSize(width, width);
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
     containerRef.current.appendChild(renderer.domElement);
 
     // Create outer eye shape (sclera) com mais detalhes na grade
-    const scleraGeometry = new THREE.SphereGeometry(2.8, 32, 32); // Aumentado de 2.2 para 2.8
+    const scleraGeometry = new THREE.SphereGeometry(2.8, 32, 32);
     const scleraMaterial = new THREE.MeshBasicMaterial({
       color: '#FFFFFF',
       wireframe: true,
@@ -29,8 +37,8 @@ const EyeAnimation = () => {
     const segments = 100;
     const rings = [];
     for (let i = 0; i < 4; i++) {
-      const radius = 1.5 - (i * 0.25); // Aumentado de 1.2 para 1.5
-      const ringGeometry = new THREE.TorusGeometry(radius, 0.06, 16, segments); // Aumentado thickness
+      const radius = 1.5 - (i * 0.25);
+      const ringGeometry = new THREE.TorusGeometry(radius, 0.06, 16, segments);
       const ringMaterial = new THREE.MeshBasicMaterial({
         color: '#4A90A0',
         wireframe: true,
@@ -43,8 +51,7 @@ const EyeAnimation = () => {
       scene.add(ring);
     }
 
-    // Create central pupil design
-    const pupilGeometry = new THREE.CircleGeometry(0.65, 32); // Aumentado de 0.5 para 0.65
+    const pupilGeometry = new THREE.CircleGeometry(0.65, 32);
     const pupilMaterial = new THREE.MeshBasicMaterial({
       color: '#4A90A0',
       wireframe: true,
@@ -55,27 +62,25 @@ const EyeAnimation = () => {
     pupil.position.z = 0.12;
     scene.add(pupil);
 
-    // Create dynamic pattern around pupil com linhas maiores
     const patternGroup = new THREE.Group();
     for (let i = 0; i < 8; i++) {
       const angle = (i / 8) * Math.PI * 2;
-      const lineGeometry = new THREE.BoxGeometry(0.5, 0.025, 0.025); // Aumentado proporcionalmente
+      const lineGeometry = new THREE.BoxGeometry(0.5, 0.025, 0.025);
       const lineMaterial = new THREE.MeshBasicMaterial({
         color: '#4A90A0',
         transparent: true,
         opacity: 0.8,
       });
       const line = new THREE.Mesh(lineGeometry, lineMaterial);
-      line.position.x = Math.cos(angle) * 0.9; // Aumentado de 0.7 para 0.9
-      line.position.y = Math.sin(angle) * 0.9; // Aumentado de 0.7 para 0.9
+      line.position.x = Math.cos(angle) * 0.9;
+      line.position.y = Math.sin(angle) * 0.9;
       line.rotation.z = angle;
       patternGroup.add(line);
     }
     scene.add(patternGroup);
 
-    camera.position.z = 6; // Ajustado para a nova escala
+    camera.position.z = 6;
 
-    // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
       sclera.rotation.y += 0.003;
@@ -96,13 +101,14 @@ const EyeAnimation = () => {
       if (containerRef.current) {
         containerRef.current.removeChild(renderer.domElement);
       }
+      window.removeEventListener('resize', updateSize);
     };
   }, []);
 
   return (
     <div 
       ref={containerRef} 
-      className="w-[400px] h-[400px] mx-auto bg-white/10 rounded-full"
+      className="w-full aspect-square max-w-[400px] mx-auto bg-white/10 rounded-full flex items-center justify-center"
       style={{
         boxShadow: `
           0 0 60px rgba(74,144,160,0.5),
