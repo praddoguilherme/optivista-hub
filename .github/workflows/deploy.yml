@@ -25,6 +25,9 @@ jobs:
     - name: Build project
       run: npm run build
 
+    - name: Copy CNAME
+      run: cp CNAME dist/
+
     - name: Create 404.html
       run: cp dist/index.html dist/404.html
 
@@ -34,4 +37,3 @@ jobs:
         personal_token: ${{ secrets.PAT }}
         publish_dir: ./dist
         enable_jekyll: false
-
