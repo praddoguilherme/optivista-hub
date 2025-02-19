@@ -24,8 +24,9 @@ jobs:
 
     - name: Build project
       run: npm run build
-      env:
-        VITE_APP_BASE_URL: /optivista-hub
+
+    - name: Copy CNAME
+      run: cp CNAME dist/
 
     - name: Create 404.html
       run: cp dist/index.html dist/404.html

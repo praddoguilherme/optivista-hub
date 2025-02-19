@@ -26,6 +26,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const createProfile = async (userId: string, email: string | undefined) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: userId,
+            email: email,
+            username: email?.split('@')[0], // Use parte do email como username inicial
+            created_at: new Date().toISOString(),
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Erro ao criar perfil:', error);
+      return null;
+    }
+  };
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (!data) {
+        // Se não encontrar o perfil, tenta criar um novo
+        const newProfile = await createProfile(userId, user?.email);
+        setProfile(newProfile);
+        return;
+      }
+
+      setProfile(data);
+    } catch (error) {
+      console.error('Erro ao buscar perfil:', error);
+      setProfile(null);
+    }
+  };
+
   useEffect(() => {
     // Inicializa a sessão e configura o listener
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -53,22 +100,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-    } catch (error) {
-      console.error('Erro ao buscar perfil:', error);
-      setProfile(null);
-    }
-  };
 
   const signIn = async (email: string, password: string) => {
     try {

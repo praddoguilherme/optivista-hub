@@ -1,4 +1,5 @@
 
+import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -10,11 +11,7 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-2">
-            <img 
-              src="/eye-favicon.png" 
-              alt="Íris Logo" 
-              className="w-6 h-6"
-            />
+            <Eye className="w-6 h-6 text-primary" />
             <span className="text-xl font-semibold text-primary">Íris</span>
           </div>
           
